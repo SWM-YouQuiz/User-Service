@@ -1,14 +1,9 @@
-package com.youquiz.template.util
+package com.youquiz.user.util
 
-import com.github.jwt.authentication.JwtAuthentication
-import io.mockk.every
-import io.mockk.mockk
 import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.request.ParameterDescriptor
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 
 infix fun String.desc(description: String): FieldDescriptor =
     fieldWithPath(this).description(description)

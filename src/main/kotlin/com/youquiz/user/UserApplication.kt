@@ -1,11 +1,11 @@
-package com.youquiz.template
+package com.youquiz.user
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class TemplateApplication
+class UserApplication
 
 fun main(args: Array<String>) {
-    runApplication<TemplateApplication>(*args)
+    runApplication<UserApplication>(*args)
 }
