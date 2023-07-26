@@ -17,5 +17,5 @@ class User(
     var allowPush: Boolean,
 ) {
     @CreatedDate
-    val createdDate: LocalDateTime = LocalDateTime.now()
+    var createdDate: LocalDateTime = LocalDateTime.now()
 }
