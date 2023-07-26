@@ -16,4 +16,14 @@ class UserHandler(
         request.awaitBody<CreateUserRequest>().let {
             ServerResponse.ok().bodyValueAndAwait(userService.createUser(it))
         }
+
+    suspend fun findById(request: ServerRequest): ServerResponse =
+        request.pathVariable("id").let {
+            ServerResponse.ok().bodyValueAndAwait(userService.findById(it.toLong()))
+        }
+
+    suspend fun findByUsername(request: ServerRequest): ServerResponse =
+        request.pathVariable("username").let {
+            ServerResponse.ok().bodyValueAndAwait(userService.findByUsername(it))
+        }
 }
