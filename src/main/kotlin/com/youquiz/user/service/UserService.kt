@@ -4,6 +4,7 @@ import com.youquiz.user.domain.User
 import com.youquiz.user.domain.enum.Role
 import com.youquiz.user.dto.CreateUserRequest
 import com.youquiz.user.dto.UserResponse
+import com.youquiz.user.exception.UserNotFoundException
 import com.youquiz.user.exception.UsernameAlreadyExistException
 import com.youquiz.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -28,4 +29,10 @@ class UserService(
                 )
             ).let { UserResponse(it) }
         }
+
+    suspend fun findById(id: Long): UserResponse =
+        userRepository.findById(id)?.let { UserResponse(it) } ?: throw UserNotFoundException()
+
+    suspend fun findByUsername(username: String): UserResponse =
+        userRepository.findByUsername(username)?.let { UserResponse(it) } ?: throw UserNotFoundException()
 }
