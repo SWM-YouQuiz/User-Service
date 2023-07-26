@@ -11,10 +11,10 @@ class User(
     @Id
     var id: Long? = null,
     val username: String,
-    var password: String,
-    var nickname: String,
+    val password: String,
+    val nickname: String,
     val role: Role,
-    var allowPush: Boolean,
+    val allowPush: Boolean,
 ) {
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
