@@ -1,6 +1,4 @@
-DROP TABLE IF EXISTS user;
-
-CREATE TABLE user
+CREATE TABLE IF NOT EXISTS user
 (
     id           BIGINT       NOT NULL AUTO_INCREMENT,
     username     VARCHAR(255) NOT NULL,
