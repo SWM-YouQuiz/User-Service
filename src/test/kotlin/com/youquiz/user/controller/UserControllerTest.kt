@@ -153,8 +153,60 @@ class UserControllerTest : BaseControllerTest() {
                     }
                 }
 
-            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                coEvery { userService.findByUsername(any()) } throws UserNotFoundException()
+                describe("getPasswordByUsername()는") {
+                    context("존재하는 유저에 대한 아이디가 주어지면") {
+                        coEvery {
+                            userService.getPasswordByUsername(
+                                any()
+                            )
+                        } returns createGetPasswordByUsernameResponse()
+
+                        it("상태 코드 200과 getPasswordByUsernameResponse를 반환한다.") {
+                            webClient
+                                .get()
+                                .uri("/user/username/{username}/password", USERNAME)
+                                .exchange()
+                                .expectStatus()
+                                .isOk
+                                .expectBody(GetPasswordByUsernameResponse::class.java)
+                                .consumeWith(
+                                    WebTestClientRestDocumentationWrapper.document(
+                                        "아이디를 통한 패스워드 조회 성공(200)",
+                                        Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                        Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                        pathParameters("username" paramDesc "아이디"),
+                                        responseFields(getPasswordByUsernameResponseFields)
+                                    )
+                                )
+                        }
+                    }
+
+                    context("존재하지 않는 유저에 대한 아이디가 주어지면") {
+                        coEvery { userService.getPasswordByUsername(any()) } throws UserNotFoundException()
+
+                        it("상태 코드 404와 에러를 반환한다.") {
+                            webClient
+                                .get()
+                                .uri("/user/username/{username}/password", USERNAME)
+                                .exchange()
+                                .expectStatus()
+                                .isNotFound
+                                .expectBody(ErrorResponse::class.java)
+                                .consumeWith(
+                                    WebTestClientRestDocumentationWrapper.document(
+                                        "아이디를 통한 패스워드 조회 실패(404)",
+                                        Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                        Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                        pathParameters("username" paramDesc "아이디"),
+                                        responseFields(errorResponseFields)
+                                    )
+                                )
+                        }
+                    }
+                }
+
+                context("존재하지 않는 유저에 대한 아이디가 주어지면") {
+                    coEvery { userService.findByUsername(any()) } throws UserNotFoundException()
 
                     it("상태 코드 404와 에러를 반환한다.") {
                         webClient
