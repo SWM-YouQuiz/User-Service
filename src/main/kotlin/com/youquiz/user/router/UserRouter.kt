@@ -12,10 +12,11 @@ class UserRouter {
     @Bean
     fun userRoutes(handler: UserHandler): RouterFunction<ServerResponse> =
         coRouter {
-            "/user".nest {
+            "/api/user".nest {
                 GET("", handler::findAll)
                 GET("/{id}", handler::findById)
                 GET("/username/{username}", handler::findByUsername)
+                GET("/username/{username}/password", handler::getPasswordByUsername)
                 POST("", handler::createUser)
             }
         }

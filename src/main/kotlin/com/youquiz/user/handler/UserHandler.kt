@@ -26,4 +26,10 @@ class UserHandler(
         request.pathVariable("username").let {
             ServerResponse.ok().bodyValueAndAwait(userService.findByUsername(it))
         }
+
+    suspend fun getPasswordByUsername(request: ServerRequest): ServerResponse =
+        request.pathVariable("username").let {
+            ServerResponse.ok().bodyValueAndAwait(userService.getPasswordByUsername(it))
+        }
+
 }
