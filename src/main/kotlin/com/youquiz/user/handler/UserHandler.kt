@@ -19,7 +19,7 @@ class UserHandler(
 
     suspend fun findById(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
-            ServerResponse.ok().bodyValueAndAwait(userService.findById(it.toLong()))
+            ServerResponse.ok().bodyValueAndAwait(userService.findById(it))
         }
 
     suspend fun findByUsername(request: ServerRequest): ServerResponse =

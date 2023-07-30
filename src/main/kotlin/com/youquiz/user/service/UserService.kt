@@ -40,7 +40,7 @@ class UserService(
             ).let { UserResponse(it) }
         }
 
-    suspend fun findById(id: Long): UserResponse =
+    suspend fun findById(id: String): UserResponse =
         userRepository.findById(id)?.let { UserResponse(it) } ?: throw UserNotFoundException()
 
     suspend fun findByUsername(username: String): UserResponse =
