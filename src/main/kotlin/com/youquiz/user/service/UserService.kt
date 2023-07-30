@@ -15,6 +15,10 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
+    fun findAll(): Flow<UserResponse> =
+        userRepository.findAll()
+            .map { UserResponse(it) }
+
     suspend fun createUser(request: CreateUserRequest): UserResponse =
         with(request) {
             userRepository.findByUsername(username)?.run { throw UsernameAlreadyExistException() }
