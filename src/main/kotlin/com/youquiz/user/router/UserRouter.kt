@@ -13,6 +13,7 @@ class UserRouter {
     fun userRoutes(handler: UserHandler): RouterFunction<ServerResponse> =
         coRouter {
             "/user".nest {
+                GET("", handler::findAll)
                 GET("/{id}", handler::findById)
                 GET("/username/{username}", handler::findByUsername)
                 POST("", handler::createUser)
