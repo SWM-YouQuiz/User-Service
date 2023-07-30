@@ -58,9 +58,32 @@ class UserControllerTest : BaseControllerTest() {
     )
 
     init {
-        describe("findById()는") {
-            context("존재하는 유저에 대한 식별자가 주어지면") {
-                coEvery { userService.findById(any()) } returns userResponse
+        describe("findAll()은") {
+            context("요청이 주어지면") {
+                coEvery { userService.findAll() } returns List(3) { createUserResponse() }.asFlow()
+
+                it("상태 코드 200과 userResponse들을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user")
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(List::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "전체 유저 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(userResponsesFields)
+                            )
+                        )
+                }
+            }
+
+            describe("findById()는") {
+                context("존재하는 유저에 대한 식별자가 주어지면") {
+                    coEvery { userService.findById(any()) } returns createUserResponse()
 
                     it("상태 코드 200과 userResponse를 반환한다.") {
                         webClient
