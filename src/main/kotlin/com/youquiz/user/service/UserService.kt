@@ -3,6 +3,7 @@ package com.youquiz.user.service
 import com.youquiz.user.domain.User
 import com.youquiz.user.domain.enum.Role
 import com.youquiz.user.dto.CreateUserRequest
+import com.youquiz.user.dto.GetPasswordByUsernameResponse
 import com.youquiz.user.dto.UserResponse
 import com.youquiz.user.exception.UserNotFoundException
 import com.youquiz.user.exception.UsernameAlreadyExistException
@@ -45,4 +46,8 @@ class UserService(
 
     suspend fun findByUsername(username: String): UserResponse =
         userRepository.findByUsername(username)?.let { UserResponse(it) } ?: throw UserNotFoundException()
+
+    suspend fun getPasswordByUsername(username: String): GetPasswordByUsernameResponse =
+        userRepository.findByUsername(username)?.let { GetPasswordByUsernameResponse(it) }
+            ?: throw UserNotFoundException()
 }
