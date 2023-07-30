@@ -11,6 +11,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 class UserServiceTest : BehaviorSpec() {
@@ -24,8 +25,17 @@ class UserServiceTest : BehaviorSpec() {
     init {
         Given("유저가 존재하는 경우") {
             val user = createUser().also {
+                coEvery { userRepository.findAll() } returns flowOf(it)
                 coEvery { userRepository.findById(any()) } returns it
                 coEvery { userRepository.findByUsername(any()) } returns it
+            }
+
+            When("모든 유저 조회를 시도하면") {
+                val userResponses = userService.findAll()
+
+                Then("모든 유저가 조회된다.") {
+                    userResponses.collect { it shouldBeEqualToComparingFields UserResponse(user) }
+                }
             }
 
             When("식별자를 통해 유저 조회를 시도하면") {
