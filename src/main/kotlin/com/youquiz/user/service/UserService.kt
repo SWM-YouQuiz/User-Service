@@ -17,7 +17,7 @@ class UserService(
 ) {
     suspend fun createUser(request: CreateUserRequest): UserResponse =
         with(request) {
-            userRepository.findFirstByUsername(username)?.run { throw UsernameAlreadyExistException() }
+            userRepository.findByUsername(username)?.run { throw UsernameAlreadyExistException() }
 
             userRepository.save(
                 User(
