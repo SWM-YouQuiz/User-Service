@@ -22,4 +22,18 @@ class User(
 ) {
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
+
+    fun correctAnswer(quizId: String) {
+        correctQuizIds.add(quizId)
+        changeAnswerRate()
+    }
+
+    fun incorrectAnswer(quizId: String) {
+        incorrectQuizIds.add(quizId)
+        changeAnswerRate()
+    }
+
+    private fun changeAnswerRate() {
+        answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
+    }
 }
