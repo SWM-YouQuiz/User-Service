@@ -4,14 +4,18 @@ import com.youquiz.user.domain.User
 import com.youquiz.user.domain.enum.Role
 import java.time.LocalDateTime
 
-class UserResponse(
-    val id: Long,
+data class UserResponse(
+    val id: String,
     val username: String,
     val password: String,
     val nickname: String,
     val role: Role,
     val allowPush: Boolean,
-    val createdDate: LocalDateTime
+    val answerRate: Double,
+    val createdDate: LocalDateTime,
+    val correctQuizIds: Set<String>,
+    val incorrectQuizIds: Set<String>,
+    val likedQuizIds: Set<String>
 ) {
     companion object {
         operator fun invoke(user: User): UserResponse =
@@ -23,7 +27,11 @@ class UserResponse(
                     nickname = nickname,
                     role = role,
                     allowPush = allowPush,
-                    createdDate = createdDate
+                    answerRate = answerRate,
+                    createdDate = createdDate,
+                    correctQuizIds = correctQuizIds,
+                    incorrectQuizIds = incorrectQuizIds,
+                    likedQuizIds = likedQuizIds
                 )
             }
     }
