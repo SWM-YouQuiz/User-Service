@@ -9,6 +9,7 @@ import com.youquiz.user.repository.UserRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -53,6 +54,14 @@ class UserServiceTest : BehaviorSpec() {
                     userResponse shouldBeEqualToComparingFields UserResponse(user)
                 }
             }
+
+            When("아이디를 통해 패스워드 조회를 시도하면") {
+                val getPasswordResponse = userService.getPasswordByUsername(user.username)
+
+                Then("아이디에 맞는 유저의 패스워드가 조회된다.") {
+                    getPasswordResponse.password shouldBe user.password
+                }
+            }
         }
 
         Given("유저가 존재하지 않는 경우") {
@@ -73,6 +82,14 @@ class UserServiceTest : BehaviorSpec() {
                 Then("예외가 발생한다.") {
                     shouldThrow<UserNotFoundException> {
                         userService.findByUsername(user.username)
+                    }
+                }
+            }
+
+            When("아이디를 통해 패스워드 조회를 시도하면") {
+                Then("예외가 발생한다.") {
+                    shouldThrow<UserNotFoundException> {
+                        userService.getPasswordByUsername(user.username)
                     }
                 }
             }
