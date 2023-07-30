@@ -1,9 +1,0 @@
-spring:
-  r2dbc:
-    url: r2dbc:mysql://${DB_HOST}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-jwt:
-  secretKey: ${JWT_SECRET}
-  accessTokenExpire: ${JWT_ACCESS_EXPIRE}
-  refreshTokenExpire: ${JWT_REFRESH_EXPIRE}
