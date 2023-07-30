@@ -15,6 +15,10 @@ class User(
     val nickname: String,
     val role: Role,
     val allowPush: Boolean,
+    var answerRate: Double,
+    val correctQuizIds: MutableSet<String>,
+    val incorrectQuizIds: MutableSet<String>,
+    val likedQuizIds: MutableSet<String>
 ) {
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
