@@ -7,7 +7,6 @@ import java.time.LocalDateTime
 data class UserResponse(
     val id: String,
     val username: String,
-    val password: String,
     val nickname: String,
     val role: Role,
     val allowPush: Boolean,
@@ -23,7 +22,6 @@ data class UserResponse(
                 UserResponse(
                     id = id!!,
                     username = username,
-                    password = password,
                     nickname = nickname,
                     role = role,
                     allowPush = allowPush,
