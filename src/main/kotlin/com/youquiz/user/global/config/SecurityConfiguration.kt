@@ -28,6 +28,12 @@ class SecurityConfiguration {
             logout { it.disable() }
             httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            authorizeExchange {
+                it.pathMatchers("/api/admin/**")
+                    .hasAuthority("ADMIN")
+                    .anyExchange()
+                    .permitAll()
+            }
             addFilterAt(JwtAuthenticationFilter(jwtProvider), SecurityWebFiltersOrder.AUTHORIZATION)
             build()
         }
