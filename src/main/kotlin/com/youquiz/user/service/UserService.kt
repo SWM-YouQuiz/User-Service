@@ -18,14 +18,13 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
-    fun findAll(): Flow<UserResponse> =
+    fun getUsers(): Flow<UserResponse> =
         userRepository.findAll()
             .map { UserResponse(it) }
 
     suspend fun createUser(request: CreateUserRequest): UserResponse =
         with(request) {
             userRepository.findByUsername(username)?.run { throw UsernameAlreadyExistException() }
-
             userRepository.save(
                 User(
                     username = username,
@@ -41,10 +40,10 @@ class UserService(
             ).let { UserResponse(it) }
         }
 
-    suspend fun findById(id: String): UserResponse =
+    suspend fun getUserById(id: String): UserResponse =
         userRepository.findById(id)?.let { UserResponse(it) } ?: throw UserNotFoundException()
 
-    suspend fun findByUsername(username: String): UserResponse =
+    suspend fun getUserByUsername(username: String): UserResponse =
         userRepository.findByUsername(username)?.let { UserResponse(it) } ?: throw UserNotFoundException()
 
     suspend fun getPasswordByUsername(username: String): GetPasswordByUsernameResponse =

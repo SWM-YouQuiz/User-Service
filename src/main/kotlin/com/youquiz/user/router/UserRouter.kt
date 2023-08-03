@@ -13,9 +13,9 @@ class UserRouter {
     fun userRoutes(handler: UserHandler): RouterFunction<ServerResponse> =
         coRouter {
             "/api/user".nest {
-                GET("", handler::findAll)
-                GET("/{id}", handler::findById)
-                GET("/username/{username}", handler::findByUsername)
+                GET("", handler::getUsers)
+                GET("/{id}", handler::getUserById)
+                GET("/username/{username}", handler::getUserByUsername)
                 GET("/username/{username}/password", handler::getPasswordByUsername)
                 POST("", handler::createUser)
             }

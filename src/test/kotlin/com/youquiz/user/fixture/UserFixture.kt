@@ -8,15 +8,15 @@ import com.youquiz.user.dto.UserResponse
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDateTime
 
-const val USERNAME = "test"
-const val NICKNAME = "test"
+const val USERNAME = "earlgrey02@github.com"
+const val NICKNAME = "earlgrey02"
 const val PASSWORD = "root"
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
 const val ANSWER_RATE = 50.0
-val CORRECT_QUIZ_IDS = setOf("1")
-val INCORRECT_QUIZ_IDS = setOf("1")
-val LIKED_QUIZ_IDS = setOf("1")
+val CORRECT_QUIZ_IDS = setOf("test")
+val INCORRECT_QUIZ_IDS = setOf("test")
+val LIKED_QUIZ_IDS = setOf("test")
 
 fun createCreateUserRequest(
     username: String = USERNAME,

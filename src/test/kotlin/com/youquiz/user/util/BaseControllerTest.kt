@@ -7,7 +7,6 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.context.ApplicationContext
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.webtestclient.WebTestClientRestDocumentation
-import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers
 import org.springframework.test.web.reactive.server.WebTestClient
 
 @AutoConfigureRestDocs
@@ -26,6 +25,5 @@ abstract class BaseControllerTest : DescribeSpec() {
             .baseUrl("/api")
             .filter(WebTestClientRestDocumentation.documentationConfiguration(restDocumentation))
             .build()
-            .mutateWith(SecurityMockServerConfigurers.csrf())
     }
 }

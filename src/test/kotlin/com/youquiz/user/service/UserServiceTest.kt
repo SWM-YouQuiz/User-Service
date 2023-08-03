@@ -32,7 +32,7 @@ class UserServiceTest : BehaviorSpec() {
             }
 
             When("모든 유저 조회를 시도하면") {
-                val userResponses = userService.findAll()
+                val userResponses = userService.getUsers()
 
                 Then("모든 유저가 조회된다.") {
                     userResponses.collect { it shouldBeEqualToComparingFields UserResponse(user) }
@@ -40,7 +40,7 @@ class UserServiceTest : BehaviorSpec() {
             }
 
             When("식별자를 통해 유저 조회를 시도하면") {
-                val userResponse = userService.findById(user.id!!)
+                val userResponse = userService.getUserById(user.id!!)
 
                 Then("식별자에 맞는 유저가 조회된다.") {
                     userResponse shouldBeEqualToComparingFields UserResponse(user)
@@ -48,7 +48,7 @@ class UserServiceTest : BehaviorSpec() {
             }
 
             When("아이디를 통해 유저 조회를 시도하면") {
-                val userResponse = userService.findByUsername(user.username)
+                val userResponse = userService.getUserByUsername(user.username)
 
                 Then("아이디에 맞는 유저가 조회된다.") {
                     userResponse shouldBeEqualToComparingFields UserResponse(user)
@@ -65,15 +65,15 @@ class UserServiceTest : BehaviorSpec() {
         }
 
         Given("유저가 존재하지 않는 경우") {
-            val user = createUser().also {
-                coEvery { userRepository.findById(any()) } returns null
-                coEvery { userRepository.findByUsername(any()) } returns null
-            }
+            val user = createUser()
+
+            coEvery { userRepository.findById(any()) } returns null
+            coEvery { userRepository.findByUsername(any()) } returns null
 
             When("식별자를 통해 유저 조회를 시도하면") {
                 Then("예외가 발생한다.") {
                     shouldThrow<UserNotFoundException> {
-                        userService.findById(user.id!!)
+                        userService.getUserById(user.id!!)
                     }
                 }
             }
@@ -81,7 +81,7 @@ class UserServiceTest : BehaviorSpec() {
             When("아이디를 통해 유저 조회를 시도하면") {
                 Then("예외가 발생한다.") {
                     shouldThrow<UserNotFoundException> {
-                        userService.findByUsername(user.username)
+                        userService.getUserByUsername(user.username)
                     }
                 }
             }
@@ -96,7 +96,7 @@ class UserServiceTest : BehaviorSpec() {
         }
 
         Given("해당 아이디를 가진 유저가 없는 경우") {
-            val newUser = createUser().also {
+            val user = createUser().also {
                 coEvery { userRepository.save(any()) } returns it
             }
 
@@ -106,7 +106,7 @@ class UserServiceTest : BehaviorSpec() {
                 val userResponse = userService.createUser(createCreateUserRequest())
 
                 Then("유저가 생성된다.") {
-                    userResponse shouldBeEqualToComparingFields UserResponse(newUser)
+                    userResponse shouldBeEqualToComparingFields UserResponse(user)
                 }
             }
         }

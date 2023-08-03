@@ -9,22 +9,22 @@ import org.springframework.web.reactive.function.server.*
 class UserHandler(
     private val userService: UserService
 ) {
-    suspend fun findAll(request: ServerRequest): ServerResponse =
-        ServerResponse.ok().bodyAndAwait(userService.findAll())
+    suspend fun getUsers(request: ServerRequest): ServerResponse =
+        ServerResponse.ok().bodyAndAwait(userService.getUsers())
 
     suspend fun createUser(request: ServerRequest): ServerResponse =
         request.awaitBody<CreateUserRequest>().let {
             ServerResponse.ok().bodyValueAndAwait(userService.createUser(it))
         }
 
-    suspend fun findById(request: ServerRequest): ServerResponse =
+    suspend fun getUserById(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
-            ServerResponse.ok().bodyValueAndAwait(userService.findById(it))
+            ServerResponse.ok().bodyValueAndAwait(userService.getUserById(it))
         }
 
-    suspend fun findByUsername(request: ServerRequest): ServerResponse =
+    suspend fun getUserByUsername(request: ServerRequest): ServerResponse =
         request.pathVariable("username").let {
-            ServerResponse.ok().bodyValueAndAwait(userService.findByUsername(it))
+            ServerResponse.ok().bodyValueAndAwait(userService.getUserByUsername(it))
         }
 
     suspend fun getPasswordByUsername(request: ServerRequest): ServerResponse =

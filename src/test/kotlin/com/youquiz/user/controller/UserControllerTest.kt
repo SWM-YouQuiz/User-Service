@@ -17,7 +17,7 @@ import com.youquiz.user.util.desc
 import com.youquiz.user.util.errorResponseFields
 import com.youquiz.user.util.paramDesc
 import io.mockk.coEvery
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
@@ -58,9 +58,9 @@ class UserControllerTest : BaseControllerTest() {
     )
 
     init {
-        describe("findAll()은") {
+        describe("getUsers()은") {
             context("요청이 주어지면") {
-                coEvery { userService.findAll() } returns List(3) { createUserResponse() }.asFlow()
+                coEvery { userService.getUsers() } returns flowOf(createUserResponse())
 
                 it("상태 코드 200과 userResponse들을 반환한다.") {
                     webClient
@@ -72,7 +72,7 @@ class UserControllerTest : BaseControllerTest() {
                         .expectBody(List::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "전체 유저 조회 성공(200)",
+                                "유저 전체 조회 성공(200)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 responseFields(userResponsesFields)
@@ -80,202 +80,202 @@ class UserControllerTest : BaseControllerTest() {
                         )
                 }
             }
+        }
 
-            describe("findById()는") {
-                context("존재하는 유저에 대한 식별자가 주어지면") {
-                    coEvery { userService.findById(any()) } returns createUserResponse()
+        describe("getUserById()는") {
+            context("존재하는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.getUserById(any()) } returns createUserResponse()
 
-                    it("상태 코드 200과 userResponse를 반환한다.") {
-                        webClient
-                            .get()
-                            .uri("/user/{id}", ID)
-                            .exchange()
-                            .expectStatus()
-                            .isOk
-                            .expectBody(UserResponse::class.java)
-                            .consumeWith(
-                                WebTestClientRestDocumentationWrapper.document(
-                                    "식별자를 통한 유저 조회 성공(200)",
-                                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                    pathParameters("id" paramDesc "식별자"),
-                                    responseFields(userResponseFields)
-                                )
+                it("상태 코드 200과 userResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(UserResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 유저 단일 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(userResponseFields)
                             )
-                    }
-                }
-
-                context("존재하지 않는 유저에 대한 식별자가 주어지면") {
-                    coEvery { userService.findById(any()) } throws UserNotFoundException()
-
-                    it("상태 코드 404와 에러를 반환한다.") {
-                        webClient
-                            .get()
-                            .uri("/user/{id}", ID)
-                            .exchange()
-                            .expectStatus()
-                            .isNotFound
-                            .expectBody(ErrorResponse::class.java)
-                            .consumeWith(
-                                WebTestClientRestDocumentationWrapper.document(
-                                    "식별자를 통한 유저 조회 실패(404)",
-                                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                    pathParameters("id" paramDesc "식별자"),
-                                    responseFields(errorResponseFields)
-                                )
-                            )
-                    }
+                        )
                 }
             }
 
-            describe("findByUsername()은") {
-                context("존재하는 유저에 대한 아이디가 주어지면") {
-                    coEvery { userService.findByUsername(any()) } returns createUserResponse()
 
-                    it("상태 코드 200과 userResponse를 반환한다.") {
-                        webClient
-                            .get()
-                            .uri("/user/username/{username}", USERNAME)
-                            .exchange()
-                            .expectStatus()
-                            .isOk
-                            .expectBody(UserResponse::class.java)
-                            .consumeWith(
-                                WebTestClientRestDocumentationWrapper.document(
-                                    "아이디를 통한 유저 조회 성공(200)",
-                                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                    pathParameters("username" paramDesc "아이디"),
-                                    responseFields(userResponseFields)
-                                )
+            context("존재하지 않는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.getUserById(any()) } throws UserNotFoundException()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "식별자를 통한 유저 단일 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
                             )
-                    }
+                        )
                 }
+            }
+        }
 
-                describe("getPasswordByUsername()는") {
-                    context("존재하는 유저에 대한 아이디가 주어지면") {
-                        coEvery {
-                            userService.getPasswordByUsername(
-                                any()
+        describe("getUserByUsername()은") {
+            context("존재하는 유저에 대한 아이디가 주어지면") {
+                coEvery { userService.getUserByUsername(any()) } returns createUserResponse()
+
+                it("상태 코드 200과 userResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/username/{username}", USERNAME)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(UserResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "아이디를 통한 유저 단일 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("username" paramDesc "아이디"),
+                                responseFields(userResponseFields)
                             )
-                        } returns createGetPasswordByUsernameResponse()
-
-                        it("상태 코드 200과 getPasswordByUsernameResponse를 반환한다.") {
-                            webClient
-                                .get()
-                                .uri("/user/username/{username}/password", USERNAME)
-                                .exchange()
-                                .expectStatus()
-                                .isOk
-                                .expectBody(GetPasswordByUsernameResponse::class.java)
-                                .consumeWith(
-                                    WebTestClientRestDocumentationWrapper.document(
-                                        "아이디를 통한 패스워드 조회 성공(200)",
-                                        Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                        Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                        pathParameters("username" paramDesc "아이디"),
-                                        responseFields(getPasswordByUsernameResponseFields)
-                                    )
-                                )
-                        }
-                    }
-
-                    context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                        coEvery { userService.getPasswordByUsername(any()) } throws UserNotFoundException()
-
-                        it("상태 코드 404와 에러를 반환한다.") {
-                            webClient
-                                .get()
-                                .uri("/user/username/{username}/password", USERNAME)
-                                .exchange()
-                                .expectStatus()
-                                .isNotFound
-                                .expectBody(ErrorResponse::class.java)
-                                .consumeWith(
-                                    WebTestClientRestDocumentationWrapper.document(
-                                        "아이디를 통한 패스워드 조회 실패(404)",
-                                        Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                        Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                        pathParameters("username" paramDesc "아이디"),
-                                        responseFields(errorResponseFields)
-                                    )
-                                )
-                        }
-                    }
-                }
-
-                context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                    coEvery { userService.findByUsername(any()) } throws UserNotFoundException()
-
-                    it("상태 코드 404와 에러를 반환한다.") {
-                        webClient
-                            .get()
-                            .uri("/user/username/{username}", USERNAME)
-                            .exchange()
-                            .expectStatus()
-                            .isNotFound
-                            .expectBody(ErrorResponse::class.java)
-                            .consumeWith(
-                                WebTestClientRestDocumentationWrapper.document(
-                                    "아이디를 통한 유저 조회 실패(404)",
-                                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                    pathParameters("username" paramDesc "아이디"),
-                                    responseFields(errorResponseFields)
-                                )
-                            )
-                    }
+                        )
                 }
             }
 
-            describe("createUser()는") {
-                context("존재하지 않는 아이디가 주어지면") {
-                    coEvery { userService.createUser(any()) } returns createUserResponse()
+            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
+                coEvery { userService.getUserByUsername(any()) } throws UserNotFoundException()
 
-                    it("상태 코드 200과 userResponse를 반환한다.") {
-                        webClient
-                            .post()
-                            .uri("/user")
-                            .bodyValue(createCreateUserRequest())
-                            .exchange()
-                            .expectStatus()
-                            .isOk
-                            .expectBody(UserResponse::class.java)
-                            .consumeWith(
-                                WebTestClientRestDocumentationWrapper.document(
-                                    "회원가입 성공(200)",
-                                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                    requestFields(createUserRequestFields),
-                                    responseFields(userResponseFields)
-                                )
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/username/{username}", USERNAME)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "아이디를 통한 유저 단일 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("username" paramDesc "아이디"),
+                                responseFields(errorResponseFields)
                             )
-                    }
+                        )
                 }
+            }
+        }
 
-                context("이미 존재하는 아이디가 주어지면") {
-                    coEvery { userService.createUser(any()) } throws UsernameAlreadyExistException()
+        describe("getPasswordByUsername()는") {
+            context("존재하는 유저에 대한 아이디가 주어지면") {
+                coEvery {
+                    userService.getPasswordByUsername(any())
+                } returns createGetPasswordByUsernameResponse()
 
-                    it("상태 코드 409와 에러를 반환한다.") {
-                        webClient
-                            .post()
-                            .uri("/user")
-                            .bodyValue(createCreateUserRequest())
-                            .exchange()
-                            .expectStatus()
-                            .is4xxClientError
-                            .expectBody(ErrorResponse::class.java)
-                            .consumeWith(
-                                WebTestClientRestDocumentationWrapper.document(
-                                    "회원가입 실패(409)",
-                                    Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                    Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                    requestFields(createUserRequestFields),
-                                    responseFields(errorResponseFields)
-                                )
+                it("상태 코드 200과 getPasswordByUsernameResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/username/{username}/password", USERNAME)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(GetPasswordByUsernameResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "아이디를 통한 패스워드 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("username" paramDesc "아이디"),
+                                responseFields(getPasswordByUsernameResponseFields)
                             )
-                    }
+                        )
+                }
+            }
+
+            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
+                coEvery { userService.getPasswordByUsername(any()) } throws UserNotFoundException()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/username/{username}/password", USERNAME)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "아이디를 통한 패스워드 조회 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("username" paramDesc "아이디"),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+
+        describe("createUser()는") {
+            context("존재하지 않는 아이디가 주어지면") {
+                coEvery { userService.createUser(any()) } returns createUserResponse()
+
+                it("상태 코드 200과 userResponse를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/user")
+                        .bodyValue(createCreateUserRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(UserResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "회원가입 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(createUserRequestFields),
+                                responseFields(userResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("이미 존재하는 아이디가 주어지면") {
+                coEvery { userService.createUser(any()) } throws UsernameAlreadyExistException()
+
+                it("상태 코드 409와 에러를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/user")
+                        .bodyValue(createCreateUserRequest())
+                        .exchange()
+                        .expectStatus()
+                        .is4xxClientError
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "회원가입 실패(409)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(createUserRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
                 }
             }
         }
