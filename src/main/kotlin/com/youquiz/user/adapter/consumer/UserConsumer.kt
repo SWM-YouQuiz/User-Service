@@ -3,6 +3,7 @@ package com.youquiz.user.adapter.consumer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.youquiz.user.event.CorrectAnswerEvent
 import com.youquiz.user.event.IncorrectAnswerEvent
+import com.youquiz.user.event.LikeEvent
 import com.youquiz.user.repository.UserRepository
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -43,6 +44,23 @@ class UserConsumer(
                     it.incorrectAnswer(quizId)
                     userRepository.save(it)
                 }
+            }
+        }
+    }
+
+    @KafkaListener(id = "like-quiz", topics = ["like-quiz"])
+    fun likeQuiz(
+        @Payload
+        message: String
+    ) = GlobalScope.launch {
+        objectMapper.readValue(message, LikeEvent::class.java).run {
+            userRepository.findById(userId)!!.let {
+                if (isLike) {
+                    it.likeQuiz(quizId)
+                } else {
+                    it.unlikeQuiz(quizId)
+                }
+                userRepository.save(it)
             }
         }
     }
