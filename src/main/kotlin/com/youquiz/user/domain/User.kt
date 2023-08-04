@@ -18,11 +18,10 @@ class User(
     var answerRate: Double,
     val correctQuizIds: MutableSet<String>,
     val incorrectQuizIds: MutableSet<String>,
-    val likedQuizIds: MutableSet<String>
-) {
+    val likedQuizIds: MutableSet<String>,
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
-
+) {
     fun correctAnswer(quizId: String) {
         correctQuizIds.add(quizId)
         changeAnswerRate()
