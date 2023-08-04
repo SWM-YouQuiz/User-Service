@@ -14,9 +14,9 @@ const val PASSWORD = "root"
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
 const val ANSWER_RATE = 50.0
-val CORRECT_QUIZ_IDS = setOf("test")
-val INCORRECT_QUIZ_IDS = setOf("test")
-val LIKED_QUIZ_IDS = setOf("test")
+val CORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
+val INCORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
+val LIKED_QUIZ_IDS = mutableSetOf("quiz_1")
 
 fun createCreateUserRequest(
     username: String = USERNAME,
@@ -43,7 +43,7 @@ fun createUserResponse(
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
     answerRate: Double = ANSWER_RATE,
-    createdDate: LocalDateTime = LocalDateTime.now(),
+    createdDate: LocalDateTime = CREATED_DATE,
     correctQuizIds: Set<String> = CORRECT_QUIZ_IDS,
     incorrectQuizIds: Set<String> = INCORRECT_QUIZ_IDS,
     likedQuizIds: Set<String> = LIKED_QUIZ_IDS,
@@ -69,9 +69,10 @@ fun createUser(
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
     answerRate: Double = ANSWER_RATE,
-    correctQuizIds: MutableSet<String> = mutableSetOf("1"),
-    incorrectQuizIds: MutableSet<String> = mutableSetOf("1"),
-    likedQuizIds: MutableSet<String> = mutableSetOf("1"),
+    correctQuizIds: MutableSet<String> = CORRECT_QUIZ_IDS.toMutableSet(),
+    incorrectQuizIds: MutableSet<String> = INCORRECT_QUIZ_IDS.toMutableSet(),
+    likedQuizIds: MutableSet<String> = LIKED_QUIZ_IDS.toMutableSet(),
+    createdDate: LocalDateTime = CREATED_DATE
 ): User = User(
     id = id,
     username = username,
@@ -82,5 +83,6 @@ fun createUser(
     answerRate = answerRate,
     correctQuizIds = correctQuizIds,
     incorrectQuizIds = incorrectQuizIds,
-    likedQuizIds = likedQuizIds
+    likedQuizIds = likedQuizIds,
+    createdDate = createdDate
 )
