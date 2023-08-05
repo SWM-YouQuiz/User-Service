@@ -2,9 +2,9 @@ package com.youquiz.user.fixture
 
 import com.youquiz.user.domain.User
 import com.youquiz.user.domain.enum.Role
-import com.youquiz.user.dto.CreateUserRequest
-import com.youquiz.user.dto.GetPasswordByUsernameResponse
-import com.youquiz.user.dto.UserResponse
+import com.youquiz.user.dto.request.CreateUserRequest
+import com.youquiz.user.dto.response.GetPasswordByUsernameResponse
+import com.youquiz.user.dto.response.UserResponse
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDateTime
 

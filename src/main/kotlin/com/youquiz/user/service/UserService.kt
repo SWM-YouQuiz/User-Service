@@ -2,9 +2,9 @@ package com.youquiz.user.service
 
 import com.youquiz.user.domain.User
 import com.youquiz.user.domain.enum.Role
-import com.youquiz.user.dto.CreateUserRequest
-import com.youquiz.user.dto.GetPasswordByUsernameResponse
-import com.youquiz.user.dto.UserResponse
+import com.youquiz.user.dto.request.CreateUserRequest
+import com.youquiz.user.dto.response.GetPasswordByUsernameResponse
+import com.youquiz.user.dto.response.UserResponse
 import com.youquiz.user.exception.UserNotFoundException
 import com.youquiz.user.exception.UsernameAlreadyExistException
 import com.youquiz.user.repository.UserRepository

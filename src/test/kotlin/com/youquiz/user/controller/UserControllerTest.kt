@@ -3,8 +3,8 @@ package com.youquiz.user.controller
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.youquiz.user.config.SecurityTestConfiguration
-import com.youquiz.user.dto.GetPasswordByUsernameResponse
-import com.youquiz.user.dto.UserResponse
+import com.youquiz.user.dto.response.GetPasswordByUsernameResponse
+import com.youquiz.user.dto.response.UserResponse
 import com.youquiz.user.exception.UserNotFoundException
 import com.youquiz.user.exception.UsernameAlreadyExistException
 import com.youquiz.user.fixture.*

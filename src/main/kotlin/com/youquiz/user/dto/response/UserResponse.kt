@@ -1,4 +1,4 @@
-package com.youquiz.user.dto
+package com.youquiz.user.dto.response
 
 import com.youquiz.user.domain.User
 import com.youquiz.user.domain.enum.Role

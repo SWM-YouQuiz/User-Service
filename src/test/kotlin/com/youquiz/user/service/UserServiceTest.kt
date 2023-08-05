@@ -1,6 +1,6 @@
 package com.youquiz.user.service
 
-import com.youquiz.user.dto.UserResponse
+import com.youquiz.user.dto.response.UserResponse
 import com.youquiz.user.exception.UserNotFoundException
 import com.youquiz.user.exception.UsernameAlreadyExistException
 import com.youquiz.user.fixture.createCreateUserRequest

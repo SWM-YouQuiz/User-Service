@@ -1,9 +1,8 @@
 package com.youquiz.user.adapter.consumer
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.youquiz.user.event.CorrectAnswerEvent
-import com.youquiz.user.event.IncorrectAnswerEvent
-import com.youquiz.user.event.LikeEvent
+import com.youquiz.user.dto.event.CheckAnswerEvent
+import com.youquiz.user.dto.event.LikeQuizEvent
 import com.youquiz.user.repository.UserRepository
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -18,30 +17,15 @@ class UserConsumer(
     private val userRepository: UserRepository,
     private val objectMapper: ObjectMapper
 ) {
-    @KafkaListener(id = "correct-answer", topics = ["correct-answer"])
-    fun correctAnswer(
+    @KafkaListener(id = "check-answer", topics = ["check-answer"])
+    fun checkQuiz(
         @Payload
         message: String
     ) = GlobalScope.launch {
-        objectMapper.readValue(message, CorrectAnswerEvent::class.java).run {
+        objectMapper.readValue(message, CheckAnswerEvent::class.java).run {
             userRepository.findById(userId)!!.let {
                 if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
                     it.correctAnswer(quizId)
-                    userRepository.save(it)
-                }
-            }
-        }
-    }
-
-    @KafkaListener(id = "incorrect-answer", topics = ["incorrect-answer"])
-    fun incorrectAnswer(
-        @Payload
-        message: String
-    ) = GlobalScope.launch {
-        objectMapper.readValue(message, IncorrectAnswerEvent::class.java).run {
-            userRepository.findById(userId)!!.let {
-                if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
-                    it.incorrectAnswer(quizId)
                     userRepository.save(it)
                 }
             }
@@ -53,7 +37,7 @@ class UserConsumer(
         @Payload
         message: String
     ) = GlobalScope.launch {
-        objectMapper.readValue(message, LikeEvent::class.java).run {
+        objectMapper.readValue(message, LikeQuizEvent::class.java).run {
             userRepository.findById(userId)!!.let {
                 if (isLike) {
                     it.likeQuiz(quizId)

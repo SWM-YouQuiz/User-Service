@@ -1,6 +1,6 @@
 package com.youquiz.user.handler
 
-import com.youquiz.user.dto.CreateUserRequest
+import com.youquiz.user.dto.request.CreateUserRequest
 import com.youquiz.user.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*

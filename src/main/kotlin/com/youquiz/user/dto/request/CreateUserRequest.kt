@@ -1,4 +1,4 @@
-package com.youquiz.user.dto
+package com.youquiz.user.dto.request
 
 data class CreateUserRequest(
     val username: String,
