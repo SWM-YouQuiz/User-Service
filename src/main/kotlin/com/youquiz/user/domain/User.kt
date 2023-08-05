@@ -32,6 +32,14 @@ class User(
         changeAnswerRate()
     }
 
+    fun likeQuiz(quizId: String) {
+        likedQuizIds.add(quizId)
+    }
+
+    fun unlikeQuiz(quizId: String) {
+        likedQuizIds.remove(quizId)
+    }
+
     private fun changeAnswerRate() {
         answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
     }
