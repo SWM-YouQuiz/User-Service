@@ -10,7 +10,7 @@ plugins {
     kotlin("plugin.spring") version "1.8.22"
 }
 
-group = "com.youquiz"
+group = "com.quizit"
 version = "0.0.1"
 
 java {
@@ -69,6 +69,10 @@ tasks {
         finalizedBy(jacocoTestReport, withType<OpenApi3Task>())
     }
 
+    bootJar {
+        archiveFileName.set("user-service.jar")
+    }
+
     jacocoTestCoverageVerification {
         violationRules {
             rule {
@@ -125,9 +129,8 @@ sonarqube {
 }
 
 openapi3 {
-    setServer("")
-    title = ""
-    description = ""
+    setServer("user-service")
+    title = "User Service API"
     version = "v1"
     format = "yml"
     outputFileNamePrefix = "api"
