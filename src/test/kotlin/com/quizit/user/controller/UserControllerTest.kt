@@ -2,7 +2,6 @@ package com.quizit.user.controller
 
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
-import com.quizit.user.config.SecurityTestConfiguration
 import com.quizit.user.dto.response.GetPasswordByUsernameResponse
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.UserNotFoundException
@@ -23,9 +22,7 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import org.springframework.test.context.ContextConfiguration
 
-@ContextConfiguration(classes = [SecurityTestConfiguration::class])
 @WebFluxTest(UserRouter::class, UserHandler::class)
 class UserControllerTest : BaseControllerTest() {
     @MockkBean
