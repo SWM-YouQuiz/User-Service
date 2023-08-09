@@ -1,4 +1,6 @@
 spring:
+  webflux:
+    base-path: /api/user
   data:
     mongodb:
       uri: ${USER_DB_URL}
