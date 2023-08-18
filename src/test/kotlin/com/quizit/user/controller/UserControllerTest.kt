@@ -2,7 +2,7 @@ package com.quizit.user.controller
 
 import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
-import com.quizit.user.dto.response.GetPasswordByUsernameResponse
+import com.quizit.user.dto.response.MatchPasswordResponse
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.PasswordNotMatchException
 import com.quizit.user.exception.PermissionDeniedException
@@ -36,6 +36,10 @@ class UserControllerTest : BaseControllerTest() {
         "allowPush" desc "알림 여부"
     )
 
+    private val matchPasswordRequestFields = listOf(
+        "password" desc "패스워드"
+    )
+
     private val updateUserByIdRequestFields = listOf(
         "nickname" desc "닉네임",
         "allowPush" desc "알림 여부"
@@ -61,8 +65,8 @@ class UserControllerTest : BaseControllerTest() {
 
     private val userResponsesFields = userResponseFields.map { "[].${it.path}" desc it.description as String }
 
-    private val getPasswordByUsernameResponseFields = listOf(
-        "password" desc "패스워드",
+    private val matchPasswordResponseFields = listOf(
+        "isMatched" desc "패스워드 일치 여부",
     )
 
     init {
@@ -187,57 +191,6 @@ class UserControllerTest : BaseControllerTest() {
             }
         }
 
-        describe("getPasswordByUsername()는") {
-            context("존재하는 유저에 대한 아이디가 주어지면") {
-                coEvery {
-                    userService.getPasswordByUsername(any())
-                } returns createGetPasswordByUsernameResponse()
-
-                it("상태 코드 200과 getPasswordByUsernameResponse를 반환한다.") {
-                    webClient
-                        .get()
-                        .uri("/user/username/{username}/password", USERNAME)
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody(GetPasswordByUsernameResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "아이디를 통한 패스워드 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("username" paramDesc "아이디"),
-                                responseFields(getPasswordByUsernameResponseFields)
-                            )
-                        )
-                }
-            }
-
-            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                coEvery { userService.getPasswordByUsername(any()) } throws UserNotFoundException()
-
-                it("상태 코드 404와 에러를 반환한다.") {
-                    webClient
-                        .get()
-                        .uri("/user/username/{username}/password", USERNAME)
-                        .exchange()
-                        .expectStatus()
-                        .isNotFound
-                        .expectBody(ErrorResponse::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "아이디를 통한 패스워드 조회 실패(404)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                pathParameters("username" paramDesc "아이디"),
-                                responseFields(errorResponseFields)
-                            )
-                        )
-                }
-            }
-        }
-
-
         describe("createUser()는") {
             context("존재하지 않는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } returns createUserResponse()
@@ -287,6 +240,59 @@ class UserControllerTest : BaseControllerTest() {
                 }
             }
         }
+
+        describe("matchPassword()는") {
+            context("존재하는 유저에 대한 아이디가 주어지면") {
+                coEvery { userService.matchPassword(any(), any()) } returns createMatchPasswordResponse()
+
+                it("상태 코드 200과 matchPasswordResponse를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/user/username/{username}/match-password", USERNAME)
+                        .bodyValue(createMatchPasswordRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(MatchPasswordResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "아이디를 통한 패스워드 일치 확인 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("username" paramDesc "아이디"),
+                                requestFields(matchPasswordRequestFields),
+                                responseFields(matchPasswordResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
+                coEvery { userService.matchPassword(any(), any()) } throws UserNotFoundException()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient
+                        .post()
+                        .uri("/user/username/{username}/match-password", USERNAME)
+                        .bodyValue(createMatchPasswordRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "아이디를 통한 패스워드 일치 확인 성공(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("username" paramDesc "아이디"),
+                                requestFields(matchPasswordRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
 
         describe("updateUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
