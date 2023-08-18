@@ -2,6 +2,7 @@ package com.quizit.user.handler
 
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
+import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
 import com.quizit.user.global.config.awaitAuthentication
 import com.quizit.user.service.UserService
@@ -25,9 +26,12 @@ class UserHandler(
             ServerResponse.ok().bodyValueAndAwait(userService.getUserByUsername(it))
         }
 
-    suspend fun getPasswordByUsername(request: ServerRequest): ServerResponse =
-        request.pathVariable("username").let {
-            ServerResponse.ok().bodyValueAndAwait(userService.getPasswordByUsername(it))
+    suspend fun matchPassword(request: ServerRequest): ServerResponse =
+        with(request) {
+            val username = pathVariable("username")
+            val matchPasswordRequest = awaitBody<MatchPasswordRequest>()
+
+            ServerResponse.ok().bodyValueAndAwait(userService.matchPassword(username, matchPasswordRequest))
         }
 
     suspend fun createUser(request: ServerRequest): ServerResponse =
