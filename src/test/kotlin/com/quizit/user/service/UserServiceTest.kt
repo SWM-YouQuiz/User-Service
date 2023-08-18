@@ -58,11 +58,11 @@ class UserServiceTest : BehaviorSpec() {
                 }
             }
 
-            When("아이디를 통해 패스워드 조회를 시도하면") {
-                val getPasswordResponse = userService.getPasswordByUsername(user.username)
+            When("아이디를 통해 패스워드 일치 여부를 확인하면") {
+                val matchPasswordResponse = userService.matchPassword(user.username, createMatchPasswordRequest())
 
-                Then("아이디에 맞는 유저의 패스워드가 조회된다.") {
-                    getPasswordResponse.password shouldBe user.password
+                Then("아이디에 맞는 유저의 패스워드 일치 여부가 확인된다.") {
+                    matchPasswordResponse.isMatched shouldBe true
                 }
             }
 
@@ -121,10 +121,10 @@ class UserServiceTest : BehaviorSpec() {
                 }
             }
 
-            When("아이디를 통해 패스워드 조회를 시도하면") {
+            When("아이디를 통해 패스워드 일치 여부를 확인면") {
                 Then("예외가 발생한다.") {
                     shouldThrow<UserNotFoundException> {
-                        userService.getPasswordByUsername(user.username)
+                        userService.matchPassword(user.username, createMatchPasswordRequest())
                     }
                 }
             }
