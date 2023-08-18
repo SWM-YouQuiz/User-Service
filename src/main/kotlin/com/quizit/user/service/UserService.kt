@@ -5,8 +5,9 @@ import com.quizit.user.domain.User
 import com.quizit.user.domain.enum.Role
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
+import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
-import com.quizit.user.dto.response.GetPasswordByUsernameResponse
+import com.quizit.user.dto.response.MatchPasswordResponse
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.PasswordNotMatchException
 import com.quizit.user.exception.PermissionDeniedException
@@ -34,9 +35,12 @@ class UserService(
     suspend fun getUserByUsername(username: String): UserResponse =
         userRepository.findByUsername(username)?.let { UserResponse(it) } ?: throw UserNotFoundException()
 
-    suspend fun getPasswordByUsername(username: String): GetPasswordByUsernameResponse =
-        userRepository.findByUsername(username)?.let { GetPasswordByUsernameResponse(it) }
-            ?: throw UserNotFoundException()
+    suspend fun matchPassword(username: String, request: MatchPasswordRequest): MatchPasswordResponse =
+        with(request) {
+            userRepository.findByUsername(username)?.let {
+                MatchPasswordResponse(passwordEncoder.matches(password, it.password))
+            } ?: throw UserNotFoundException()
+        }
 
     suspend fun createUser(request: CreateUserRequest): UserResponse =
         with(request) {
