@@ -4,8 +4,9 @@ import com.quizit.user.domain.User
 import com.quizit.user.domain.enum.Role
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
+import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
-import com.quizit.user.dto.response.GetPasswordByUsernameResponse
+import com.quizit.user.dto.response.MatchPasswordResponse
 import com.quizit.user.dto.response.UserResponse
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDateTime
@@ -19,6 +20,7 @@ const val ANSWER_RATE = 50.0
 val CORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
 val INCORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
 val LIKED_QUIZ_IDS = mutableSetOf("quiz_1")
+const val IS_MATCHED = true
 
 fun createCreateUserRequest(
     username: String = USERNAME,
@@ -33,10 +35,15 @@ fun createCreateUserRequest(
         allowPush = allowPush
     )
 
-fun createGetPasswordByUsernameResponse(
+fun createMatchPasswordRequest(
     password: String = PASSWORD
-): GetPasswordByUsernameResponse =
-    GetPasswordByUsernameResponse(BCryptPasswordEncoder().encode(password))
+): MatchPasswordRequest =
+    MatchPasswordRequest(password)
+
+fun createMatchPasswordResponse(
+    isMatched: Boolean = IS_MATCHED
+): MatchPasswordResponse =
+    MatchPasswordResponse(isMatched)
 
 fun createUserResponse(
     id: String = ID,
