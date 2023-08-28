@@ -4,6 +4,8 @@ import com.epages.restdocs.apispec.WebTestClientRestDocumentationWrapper
 import com.ninjasquad.springmockk.MockkBean
 import com.quizit.user.dto.response.GetPasswordByUsernameResponse
 import com.quizit.user.dto.response.UserResponse
+import com.quizit.user.exception.PasswordNotMatchException
+import com.quizit.user.exception.PermissionDeniedException
 import com.quizit.user.exception.UserNotFoundException
 import com.quizit.user.exception.UsernameAlreadyExistException
 import com.quizit.user.fixture.*
@@ -11,11 +13,10 @@ import com.quizit.user.global.dto.ErrorResponse
 import com.quizit.user.handler.UserHandler
 import com.quizit.user.router.UserRouter
 import com.quizit.user.service.UserService
-import com.quizit.user.util.BaseControllerTest
-import com.quizit.user.util.desc
-import com.quizit.user.util.errorResponseFields
-import com.quizit.user.util.paramDesc
+import com.quizit.user.util.*
 import io.mockk.coEvery
+import io.mockk.just
+import io.mockk.runs
 import kotlinx.coroutines.flow.flowOf
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
@@ -33,6 +34,16 @@ class UserControllerTest : BaseControllerTest() {
         "password" desc "패스워드",
         "nickname" desc "닉네임",
         "allowPush" desc "알림 여부"
+    )
+
+    private val updateUserByIdRequestFields = listOf(
+        "nickname" desc "닉네임",
+        "allowPush" desc "알림 여부"
+    )
+
+    private val changePasswordRequestFields = listOf(
+        "password" desc "현재 패스워드",
+        "newPassword" desc "새 패스워드"
     )
 
     private val userResponseFields = listOf(
@@ -270,6 +281,253 @@ class UserControllerTest : BaseControllerTest() {
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 requestFields(createUserRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("updateUserById()는") {
+            context("존재하는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.updateUserById(any(), any(), any()) } returns createUserResponse()
+                withMockUser()
+
+                it("상태 코드 200과 userResponse를 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}", ID)
+                        .bodyValue(createUpdateUserByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(UserResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 수정 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                requestFields(updateUserByIdRequestFields),
+                                responseFields(userResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("존재하지 않는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.updateUserById(any(), any(), any()) } throws UserNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}", ID)
+                        .bodyValue(createUpdateUserByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 수정 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                requestFields(updateUserByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("본인이 아닌 다른 유저의 식별자가 주어지면") {
+                coEvery { userService.updateUserById(any(), any(), any()) } throws PermissionDeniedException()
+                withMockUser()
+
+                it("상태 코드 403과 에러를 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}", ID)
+                        .bodyValue(createUpdateUserByIdRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isForbidden
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 수정 실패(403)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                requestFields(updateUserByIdRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("changePassword()는") {
+            context("존재하는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.changePassword(any(), any(), any()) } just runs
+                withMockUser()
+
+                it("상태 코드 200을 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}/password", ID)
+                        .bodyValue(createChangePasswordRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody()
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "패스워드 변경 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                requestFields(changePasswordRequestFields),
+                            )
+                        )
+                }
+            }
+
+            context("존재하지 않는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.changePassword(any(), any(), any()) } throws UserNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}/password", ID)
+                        .bodyValue(createChangePasswordRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "패스워드 변경 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                requestFields(changePasswordRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("본인이 아닌 다른 유저의 식별자가 주어지면") {
+                coEvery { userService.changePassword(any(), any(), any()) } throws PermissionDeniedException()
+                withMockUser()
+
+                it("상태 코드 403과 에러를 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}/password", ID)
+                        .bodyValue(createChangePasswordRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isForbidden
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "패스워드 변경 실패(403)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                requestFields(changePasswordRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("현재 패스워드가 일치하지 않으면") {
+                coEvery { userService.changePassword(any(), any(), any()) } throws PasswordNotMatchException()
+                withMockUser()
+
+                it("상태 코드 400과 에러를 반환한다.") {
+                    webClient.put()
+                        .uri("/user/{id}/password", ID)
+                        .bodyValue(createChangePasswordRequest())
+                        .exchange()
+                        .expectStatus()
+                        .isBadRequest
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "패스워드 변경 실패(400)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                requestFields(changePasswordRequestFields),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+        }
+
+        describe("deleteUserById()는") {
+            context("존재하는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.deleteUserById(any(), any()) } just runs
+                withMockUser()
+
+                it("상태 코드 200을 반환한다.") {
+                    webClient.delete()
+                        .uri("/user/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody()
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 삭제 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                            )
+                        )
+                }
+            }
+
+            context("존재하지 않는 유저에 대한 식별자가 주어지면") {
+                coEvery { userService.deleteUserById(any(), any()) } throws UserNotFoundException()
+                withMockUser()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient.delete()
+                        .uri("/user/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 삭제 실패(404)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
+                                responseFields(errorResponseFields)
+                            )
+                        )
+                }
+            }
+
+            context("본인이 아닌 다른 유저의 식별자가 주어지면") {
+                coEvery { userService.deleteUserById(any(), any()) } throws PermissionDeniedException()
+                withMockUser()
+
+                it("상태 코드 403과 에러를 반환한다.") {
+                    webClient.delete()
+                        .uri("/user/{id}", ID)
+                        .exchange()
+                        .expectStatus()
+                        .isForbidden
+                        .expectBody(ErrorResponse::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 삭제 실패(403)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                pathParameters("id" paramDesc "식별자"),
                                 responseFields(errorResponseFields)
                             )
                         )

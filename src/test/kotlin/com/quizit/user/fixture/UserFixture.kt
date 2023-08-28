@@ -2,7 +2,9 @@ package com.quizit.user.fixture
 
 import com.quizit.user.domain.User
 import com.quizit.user.domain.enum.Role
+import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
+import com.quizit.user.dto.request.UpdateUserByIdRequest
 import com.quizit.user.dto.response.GetPasswordByUsernameResponse
 import com.quizit.user.dto.response.UserResponse
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -59,6 +61,24 @@ fun createUserResponse(
         correctQuizIds = correctQuizIds,
         incorrectQuizIds = incorrectQuizIds,
         likedQuizIds = likedQuizIds
+    )
+
+fun createUpdateUserByIdRequest(
+    nickname: String = NICKNAME,
+    allowPush: Boolean = ALLOW_PUSH,
+): UpdateUserByIdRequest =
+    UpdateUserByIdRequest(
+        nickname = nickname,
+        allowPush = allowPush
+    )
+
+fun createChangePasswordRequest(
+    password: String = PASSWORD,
+    newPassword: String = PASSWORD
+): ChangePasswordRequest =
+    ChangePasswordRequest(
+        password = password,
+        newPassword = newPassword
     )
 
 fun createUser(

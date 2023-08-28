@@ -3,24 +3,25 @@ package com.quizit.user.service
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.UserNotFoundException
 import com.quizit.user.exception.UsernameAlreadyExistException
-import com.quizit.user.fixture.createCreateUserRequest
-import com.quizit.user.fixture.createUser
+import com.quizit.user.fixture.*
 import com.quizit.user.repository.UserRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.shouldBe
-import io.mockk.coEvery
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.flow.flowOf
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 class UserServiceTest : BehaviorSpec() {
     private val userRepository = mockk<UserRepository>()
 
+    private val passwordEncoder = BCryptPasswordEncoder()
+
     private val userService: UserService = UserService(
         userRepository = userRepository,
-        passwordEncoder = BCryptPasswordEncoder()
+        passwordEncoder = passwordEncoder
     )
 
     init {
@@ -30,6 +31,8 @@ class UserServiceTest : BehaviorSpec() {
                 coEvery { userRepository.findById(any()) } returns it
                 coEvery { userRepository.findByUsername(any()) } returns it
             }
+
+            coEvery { userRepository.deleteById(any()) } just runs
 
             When("모든 유저 조회를 시도하면") {
                 val userResponses = userService.getUsers()
@@ -60,6 +63,38 @@ class UserServiceTest : BehaviorSpec() {
 
                 Then("아이디에 맞는 유저의 패스워드가 조회된다.") {
                     getPasswordResponse.password shouldBe user.password
+                }
+            }
+
+            When("프로필을 수정하면") {
+                val updateUserByIdRequest = createUpdateUserByIdRequest(nickname = "update").also {
+                    coEvery { userRepository.save(any()) } returns createUser(nickname = it.nickname)
+                }
+                val userResponse = userService.updateUserById(ID, createJwtAuthentication(), updateUserByIdRequest)
+
+                Then("유저 정보가 변경된다.") {
+                    userResponse.nickname shouldNotBeEqual user.nickname
+                }
+            }
+
+            When("패스워드를 수정하면") {
+                val changePasswordRequest = createChangePasswordRequest(newPassword = "update").also {
+                    coEvery { userRepository.save(any()) } returns createUser(
+                        password = passwordEncoder.encode(it.newPassword)
+                    )
+                }
+                val userResponse = userService.changePassword(ID, createJwtAuthentication(), changePasswordRequest)
+
+                Then("패스워드가 변경된다.") {
+                    coVerify { userRepository.save(any()) }
+                }
+            }
+
+            When("회원 탈퇴를 하면") {
+                userService.deleteUserById(ID, createJwtAuthentication())
+
+                Then("유저가 삭제된다.") {
+                    coVerify { userRepository.deleteById(any()) }
                 }
             }
         }
