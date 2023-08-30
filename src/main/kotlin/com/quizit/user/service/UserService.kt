@@ -29,6 +29,10 @@ class UserService(
         userRepository.findAll()
             .map { UserResponse(it) }
 
+    fun getRanking(): Flow<UserResponse> =
+        userRepository.findAllOrderByCorrectQuizIdsSize()
+            .map { UserResponse(it) }
+
     suspend fun getUserById(id: String): UserResponse =
         userRepository.findById(id)?.let { UserResponse(it) } ?: throw UserNotFoundException()
 

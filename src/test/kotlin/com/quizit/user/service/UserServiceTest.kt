@@ -28,6 +28,7 @@ class UserServiceTest : BehaviorSpec() {
         Given("유저가 존재하는 경우") {
             val user = createUser().also {
                 coEvery { userRepository.findAll() } returns flowOf(it)
+                coEvery { userRepository.findAllOrderByCorrectQuizIdsSize() } returns flowOf(it)
                 coEvery { userRepository.findById(any()) } returns it
                 coEvery { userRepository.findByUsername(any()) } returns it
             }
@@ -38,6 +39,14 @@ class UserServiceTest : BehaviorSpec() {
                 val userResponses = userService.getUsers()
 
                 Then("모든 유저가 조회된다.") {
+                    userResponses.collect { it shouldBeEqualToComparingFields UserResponse(user) }
+                }
+            }
+
+            When("유저 랭킹 조회를 시도하면") {
+                val userResponses = userService.getRanking()
+
+                Then("모든 유저에 대한 랭킹이 조회된다.") {
                     userResponses.collect { it shouldBeEqualToComparingFields UserResponse(user) }
                 }
             }

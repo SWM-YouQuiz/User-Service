@@ -94,6 +94,30 @@ class UserControllerTest : BaseControllerTest() {
             }
         }
 
+        describe("getRanking()은") {
+            context("요청이 주어지면") {
+                coEvery { userService.getRanking() } returns flowOf(createUserResponse())
+
+                it("상태 코드 200과 랭킹 순서에 맞게 userResponse들을 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/ranking")
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody(List::class.java)
+                        .consumeWith(
+                            WebTestClientRestDocumentationWrapper.document(
+                                "유저 랭킹 조회 성공(200)",
+                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
+                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
+                                responseFields(userResponsesFields)
+                            )
+                        )
+                }
+            }
+        }
+
         describe("getUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } returns createUserResponse()
@@ -117,7 +141,6 @@ class UserControllerTest : BaseControllerTest() {
                         )
                 }
             }
-
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } throws UserNotFoundException()

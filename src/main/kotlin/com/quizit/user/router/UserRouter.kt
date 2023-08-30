@@ -14,6 +14,7 @@ class UserRouter {
         coRouter {
             "/user".nest {
                 GET("", handler::getUsers)
+                GET("/ranking", handler::getRanking)
                 GET("/{id}", handler::getUserById)
                 GET("/username/{username}", handler::getUserByUsername)
                 POST("", handler::createUser)
