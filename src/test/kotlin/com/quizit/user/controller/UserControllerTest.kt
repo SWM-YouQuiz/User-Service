@@ -33,7 +33,9 @@ class UserControllerTest : BaseControllerTest() {
         "username" desc "아이디",
         "password" desc "패스워드",
         "nickname" desc "닉네임",
-        "allowPush" desc "알림 여부"
+        "image" desc "프로필 사진",
+        "allowPush" desc "알림 여부",
+        "dailyTarget" desc "하루 목표",
     )
 
     private val matchPasswordRequestFields = listOf(
@@ -42,7 +44,9 @@ class UserControllerTest : BaseControllerTest() {
 
     private val updateUserByIdRequestFields = listOf(
         "nickname" desc "닉네임",
-        "allowPush" desc "알림 여부"
+        "image" desc "프로필 사진",
+        "allowPush" desc "알림 여부",
+        "dailyTarget" desc "하루 목표",
     )
 
     private val changePasswordRequestFields = listOf(
@@ -54,8 +58,10 @@ class UserControllerTest : BaseControllerTest() {
         "id" desc "식별자",
         "username" desc "아이디",
         "nickname" desc "닉네임",
+        "image" desc "프로필 사진",
         "role" desc "권한",
         "allowPush" desc "알림 여부",
+        "dailyTarget" desc "하루 목표",
         "answerRate" desc "정답률",
         "correctQuizIds" desc "맞은 퀴즈 리스트",
         "incorrectQuizIds" desc "틀린 퀴즈 리스트",
