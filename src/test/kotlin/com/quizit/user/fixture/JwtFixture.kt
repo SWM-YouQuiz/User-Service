@@ -12,14 +12,14 @@ val AUTHORITIES = listOf(SimpleGrantedAuthority("USER"))
 val jwtProvider = JwtConfiguration().jwtProvider(
     secretKey = SECRET_KEY, accessTokenExpire = ACCESS_TOKEN_EXPIRE, refreshTokenExpire = REFRESH_TOKEN_EXPIRE
 )
-val ACCESS_TOKEN = jwtProvider.createAccessToken(createJwtAuthentication())
-val REFRESH_TOKEN = jwtProvider.createRefreshToken(createJwtAuthentication())
 
 fun createJwtAuthentication(
     id: String = ID,
-    authorities: List<GrantedAuthority> = AUTHORITIES
+    authorities: List<GrantedAuthority> = AUTHORITIES,
+    token: String? = null
 ): DefaultJwtAuthentication =
     DefaultJwtAuthentication(
         id = id,
-        authorities = authorities
+        authorities = authorities,
+        token = token
     )
