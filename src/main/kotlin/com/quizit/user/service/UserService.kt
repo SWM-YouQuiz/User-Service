@@ -25,10 +25,6 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
-    fun getUsers(): Flow<UserResponse> =
-        userRepository.findAll()
-            .map { UserResponse(it) }
-
     fun getRanking(): Flow<UserResponse> =
         userRepository.findAllOrderByCorrectQuizIdsSize()
             .map { UserResponse(it) }

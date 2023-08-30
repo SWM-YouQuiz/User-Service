@@ -76,30 +76,6 @@ class UserControllerTest : BaseControllerTest() {
     )
 
     init {
-        describe("getUsers()은") {
-            context("요청이 주어지면") {
-                coEvery { userService.getUsers() } returns flowOf(createUserResponse())
-
-                it("상태 코드 200과 userResponse들을 반환한다.") {
-                    webClient
-                        .get()
-                        .uri("/user")
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "유저 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(userResponsesFields)
-                            )
-                        )
-                }
-            }
-        }
-
         describe("getRanking()은") {
             context("요청이 주어지면") {
                 coEvery { userService.getRanking() } returns flowOf(createUserResponse())

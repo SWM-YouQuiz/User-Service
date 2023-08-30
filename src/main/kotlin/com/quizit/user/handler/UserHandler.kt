@@ -13,12 +13,9 @@ import org.springframework.web.reactive.function.server.*
 class UserHandler(
     private val userService: UserService
 ) {
-    suspend fun getUsers(request: ServerRequest): ServerResponse =
-        ServerResponse.ok().bodyAndAwait(userService.getUsers())
-
     suspend fun getRanking(request: ServerRequest): ServerResponse =
         ServerResponse.ok().bodyAndAwait(userService.getRanking())
-    
+
     suspend fun getUserById(request: ServerRequest): ServerResponse =
         request.pathVariable("id").let {
             ServerResponse.ok().bodyValueAndAwait(userService.getUserById(it))
