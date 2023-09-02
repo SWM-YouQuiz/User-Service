@@ -35,8 +35,13 @@ class SecurityConfiguration {
             authorizeExchange {
                 it.pathMatchers("/api/user/admin/**")
                     .hasAuthority("ADMIN")
-                    .anyExchange()
+                    .pathMatchers(
+                        "/api/user/user/username/{username}",
+                        "/api/user/user/username/{username}/match-password"
+                    )
                     .permitAll()
+                    .anyExchange()
+                    .authenticated()
             }
             addFilterAt(JwtAuthenticationFilter(jwtProvider), SecurityWebFiltersOrder.AUTHORIZATION)
             build()
