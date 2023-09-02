@@ -22,10 +22,15 @@ class SecurityTestConfiguration {
             httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             authorizeExchange {
-                it.pathMatchers("/admin/**")
+                it.pathMatchers("/user/admin/**")
                     .hasAuthority("ADMIN")
-                    .anyExchange()
+                    .pathMatchers(
+                        "/user/username/{username}",
+                        "/user/username/{username}/match-password"
+                    )
                     .permitAll()
+                    .anyExchange()
+                    .authenticated()
             }
             addFilterAt(JwtAuthenticationFilter(jwtProvider), SecurityWebFiltersOrder.AUTHORIZATION)
             build()

@@ -79,6 +79,7 @@ class UserControllerTest : BaseControllerTest() {
         describe("getRanking()은") {
             context("요청이 주어지면") {
                 coEvery { userService.getRanking() } returns flowOf(createUserResponse())
+                withMockUser()
 
                 it("상태 코드 200과 랭킹 순서에 맞게 userResponse들을 반환한다.") {
                     webClient
@@ -103,6 +104,7 @@ class UserControllerTest : BaseControllerTest() {
         describe("getUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } returns createUserResponse()
+                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
@@ -126,6 +128,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } throws UserNotFoundException()
+                withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -174,6 +177,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("존재하지 않는 유저에 대한 아이디가 주어지면") {
                 coEvery { userService.getUserByUsername(any()) } throws UserNotFoundException()
+                withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -199,6 +203,7 @@ class UserControllerTest : BaseControllerTest() {
         describe("createUser()는") {
             context("존재하지 않는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } returns createUserResponse()
+                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
@@ -223,6 +228,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("이미 존재하는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } throws UsernameAlreadyExistException()
+                withMockUser()
 
                 it("상태 코드 409와 에러를 반환한다.") {
                     webClient
@@ -297,7 +303,6 @@ class UserControllerTest : BaseControllerTest() {
                 }
             }
         }
-
 
         describe("updateUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
