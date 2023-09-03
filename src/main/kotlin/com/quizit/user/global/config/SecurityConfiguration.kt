@@ -33,11 +33,11 @@ class SecurityConfiguration {
             httpBasic { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             authorizeExchange {
-                it.pathMatchers("/api/user/admin/**")
+                it.pathMatchers("/user/admin/**")
                     .hasAuthority("ADMIN")
                     .pathMatchers(
-                        "/api/user/user/username/{username}",
-                        "/api/user/user/username/{username}/match-password"
+                        "/user/username/{username}",
+                        "/user/username/{username}/match-password"
                     )
                     .permitAll()
                     .anyExchange()
