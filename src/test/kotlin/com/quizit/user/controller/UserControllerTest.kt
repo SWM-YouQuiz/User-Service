@@ -65,7 +65,7 @@ class UserControllerTest : BaseControllerTest() {
         "answerRate" desc "정답률",
         "correctQuizIds" desc "맞은 퀴즈 리스트",
         "incorrectQuizIds" desc "틀린 퀴즈 리스트",
-        "likedQuizIds" desc "좋아요한 퀴즈 리스트",
+        "markedQuizIds" desc "저장한 퀴즈 리스트",
         "createdDate" desc "가입 날짜"
     )
 
@@ -76,33 +76,10 @@ class UserControllerTest : BaseControllerTest() {
     )
 
     init {
-        describe("getUsers()은") {
-            context("요청이 주어지면") {
-                coEvery { userService.getUsers() } returns flowOf(createUserResponse())
-
-                it("상태 코드 200과 userResponse들을 반환한다.") {
-                    webClient
-                        .get()
-                        .uri("/user")
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "유저 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(userResponsesFields)
-                            )
-                        )
-                }
-            }
-        }
-
         describe("getRanking()은") {
             context("요청이 주어지면") {
                 coEvery { userService.getRanking() } returns flowOf(createUserResponse())
+                withMockUser()
 
                 it("상태 코드 200과 랭킹 순서에 맞게 userResponse들을 반환한다.") {
                     webClient
@@ -127,6 +104,7 @@ class UserControllerTest : BaseControllerTest() {
         describe("getUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } returns createUserResponse()
+                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
@@ -150,6 +128,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } throws UserNotFoundException()
+                withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -198,6 +177,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("존재하지 않는 유저에 대한 아이디가 주어지면") {
                 coEvery { userService.getUserByUsername(any()) } throws UserNotFoundException()
+                withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -223,6 +203,7 @@ class UserControllerTest : BaseControllerTest() {
         describe("createUser()는") {
             context("존재하지 않는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } returns createUserResponse()
+                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
@@ -247,6 +228,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("이미 존재하는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } throws UsernameAlreadyExistException()
+                withMockUser()
 
                 it("상태 코드 409와 에러를 반환한다.") {
                     webClient
@@ -321,7 +303,6 @@ class UserControllerTest : BaseControllerTest() {
                 }
             }
         }
-
 
         describe("updateUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {

@@ -21,7 +21,7 @@ const val DAILY_TARGET = 10
 const val ANSWER_RATE = 50.0
 val CORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
 val INCORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
-val LIKED_QUIZ_IDS = mutableSetOf("quiz_1")
+val MARKED_QUIZ_IDS = mutableSetOf("quiz_1")
 const val IS_MATCHED = true
 
 fun createCreateUserRequest(
@@ -63,7 +63,7 @@ fun createUserResponse(
     createdDate: LocalDateTime = CREATED_DATE,
     correctQuizIds: Set<String> = CORRECT_QUIZ_IDS,
     incorrectQuizIds: Set<String> = INCORRECT_QUIZ_IDS,
-    likedQuizIds: Set<String> = LIKED_QUIZ_IDS,
+    markedQuizIds: Set<String> = MARKED_QUIZ_IDS,
 ): UserResponse =
     UserResponse(
         id = id,
@@ -77,7 +77,7 @@ fun createUserResponse(
         createdDate = createdDate,
         correctQuizIds = correctQuizIds,
         incorrectQuizIds = incorrectQuizIds,
-        likedQuizIds = likedQuizIds
+        markedQuizIds = markedQuizIds
     )
 
 fun createUpdateUserByIdRequest(
@@ -114,7 +114,7 @@ fun createUser(
     answerRate: Double = ANSWER_RATE,
     correctQuizIds: MutableSet<String> = CORRECT_QUIZ_IDS.toMutableSet(),
     incorrectQuizIds: MutableSet<String> = INCORRECT_QUIZ_IDS.toMutableSet(),
-    likedQuizIds: MutableSet<String> = LIKED_QUIZ_IDS.toMutableSet(),
+    markedQuizIds: MutableSet<String> = MARKED_QUIZ_IDS.toMutableSet(),
     createdDate: LocalDateTime = CREATED_DATE
 ): User = User(
     id = id,
@@ -128,6 +128,6 @@ fun createUser(
     answerRate = answerRate,
     correctQuizIds = correctQuizIds,
     incorrectQuizIds = incorrectQuizIds,
-    likedQuizIds = likedQuizIds,
+    markedQuizIds = markedQuizIds,
     createdDate = createdDate
 )

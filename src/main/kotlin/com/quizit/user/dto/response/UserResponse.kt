@@ -16,7 +16,7 @@ data class UserResponse(
     val createdDate: LocalDateTime,
     val correctQuizIds: Set<String>,
     val incorrectQuizIds: Set<String>,
-    val likedQuizIds: Set<String>
+    val markedQuizIds: Set<String>
 ) {
     companion object {
         operator fun invoke(user: User): UserResponse =
@@ -33,7 +33,7 @@ data class UserResponse(
                     createdDate = createdDate,
                     correctQuizIds = correctQuizIds,
                     incorrectQuizIds = incorrectQuizIds,
-                    likedQuizIds = likedQuizIds
+                    markedQuizIds = markedQuizIds
                 )
             }
     }
