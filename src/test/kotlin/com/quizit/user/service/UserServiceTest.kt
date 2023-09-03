@@ -84,7 +84,7 @@ class UserServiceTest : BehaviorSpec() {
                         password = passwordEncoder.encode(it.newPassword)
                     )
                 }
-                val userResponse = userService.changePassword(ID, createJwtAuthentication(), changePasswordRequest)
+                userService.changePassword(ID, createJwtAuthentication(), changePasswordRequest)
 
                 Then("패스워드가 변경된다.") {
                     coVerify { userRepository.save(any()) }
@@ -148,7 +148,7 @@ class UserServiceTest : BehaviorSpec() {
         }
 
         Given("해당 아이디를 가진 유저가 이미 존재하는 경우") {
-            val user = createUser().also {
+            createUser().also {
                 coEvery { userRepository.findByUsername(any()) } returns it
             }
 

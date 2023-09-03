@@ -20,7 +20,7 @@ class User(
     var answerRate: Double,
     val correctQuizIds: MutableSet<String>,
     val incorrectQuizIds: MutableSet<String>,
-    val likedQuizIds: MutableSet<String>,
+    val markedQuizIds: MutableSet<String>,
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
 ) {
@@ -34,12 +34,12 @@ class User(
         changeAnswerRate()
     }
 
-    fun likeQuiz(quizId: String) {
-        likedQuizIds.add(quizId)
+    fun markQuiz(quizId: String) {
+        markedQuizIds.add(quizId)
     }
 
-    fun unlikeQuiz(quizId: String) {
-        likedQuizIds.remove(quizId)
+    fun unmarkQuiz(quizId: String) {
+        markedQuizIds.remove(quizId)
     }
 
     private fun changeAnswerRate() {

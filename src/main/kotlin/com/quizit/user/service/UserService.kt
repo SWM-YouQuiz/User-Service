@@ -57,7 +57,7 @@ class UserService(
                     answerRate = 0.0,
                     correctQuizIds = mutableSetOf(),
                     incorrectQuizIds = mutableSetOf(),
-                    likedQuizIds = mutableSetOf(),
+                    markedQuizIds = mutableSetOf(),
                 )
             ).let { UserResponse(it) }
         }
@@ -81,7 +81,7 @@ class UserService(
                             answerRate = it.answerRate,
                             correctQuizIds = it.correctQuizIds,
                             incorrectQuizIds = it.incorrectQuizIds,
-                            likedQuizIds = it.likedQuizIds
+                            markedQuizIds = it.markedQuizIds
                         )
                     )
                 } else throw PermissionDeniedException()
@@ -108,7 +108,7 @@ class UserService(
                                 answerRate = it.answerRate,
                                 correctQuizIds = it.correctQuizIds,
                                 incorrectQuizIds = it.incorrectQuizIds,
-                                likedQuizIds = it.likedQuizIds
+                                markedQuizIds = it.markedQuizIds
                             )
                         )
                     } else throw PasswordNotMatchException()
