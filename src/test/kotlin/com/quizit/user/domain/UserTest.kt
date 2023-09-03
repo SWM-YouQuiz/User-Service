@@ -30,18 +30,18 @@ class UserTest : BehaviorSpec() {
             }
 
             When("유저가 퀴즈를 저장했다면") {
-                val likeUser = createUser().apply { markQuiz(ID) }
+                val markUser = createUser().apply { markQuiz(ID) }
 
                 Then("해당 퀴즈가 유저의 저장한 퀴즈에 추가된다.") {
-                    likeUser.markedQuizIds.size shouldBeGreaterThan user.markedQuizIds.size
+                    markUser.markedQuizIds.size shouldBeGreaterThan user.markedQuizIds.size
                 }
             }
 
             When("유저가 퀴즈를 저장 취소했다면") {
-                val unlikeUser = createUser().apply { unmarkQuiz(markedQuizIds.random()) }
+                val unmarkUser = createUser().apply { unmarkQuiz(markedQuizIds.random()) }
 
                 Then("해당 퀴즈가 유저의 저장한 퀴즈에서 삭제된다.") {
-                    unlikeUser.markedQuizIds.size shouldBeLessThan user.markedQuizIds.size
+                    unmarkUser.markedQuizIds.size shouldBeLessThan user.markedQuizIds.size
                 }
             }
         }
