@@ -36,6 +36,7 @@ class SecurityConfiguration {
                 it.pathMatchers("/user/admin/**")
                     .hasAuthority("ADMIN")
                     .pathMatchers(
+                        "/user",
                         "/user/username/{username}",
                         "/user/username/{username}/match-password"
                     )
