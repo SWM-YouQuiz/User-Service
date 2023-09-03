@@ -2,7 +2,7 @@ package com.quizit.user.adapter.consumer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.quizit.user.dto.event.CheckAnswerEvent
-import com.quizit.user.dto.event.LikeQuizEvent
+import com.quizit.user.dto.event.MarkQuizEvent
 import com.quizit.user.repository.UserRepository
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -32,17 +32,17 @@ class UserConsumer(
         }
     }
 
-    @KafkaListener(id = "like-quiz", topics = ["like-quiz"])
-    fun likeQuiz(
+    @KafkaListener(id = "mark-quiz", topics = ["mark-quiz"])
+    fun markQuiz(
         @Payload
         message: String
     ) = GlobalScope.launch {
-        objectMapper.readValue(message, LikeQuizEvent::class.java).run {
+        objectMapper.readValue(message, MarkQuizEvent::class.java).run {
             userRepository.findById(userId)!!.let {
-                if (isLike) {
-                    it.likeQuiz(quizId)
+                if (isMarked) {
+                    it.markQuiz(quizId)
                 } else {
-                    it.unlikeQuiz(quizId)
+                    it.unmarkQuiz(quizId)
                 }
                 userRepository.save(it)
             }
