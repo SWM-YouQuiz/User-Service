@@ -177,7 +177,6 @@ class UserControllerTest : BaseControllerTest() {
 
             context("존재하지 않는 유저에 대한 아이디가 주어지면") {
                 coEvery { userService.getUserByUsername(any()) } throws UserNotFoundException()
-                withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -203,7 +202,6 @@ class UserControllerTest : BaseControllerTest() {
         describe("createUser()는") {
             context("존재하지 않는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } returns createUserResponse()
-                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
@@ -228,7 +226,6 @@ class UserControllerTest : BaseControllerTest() {
 
             context("이미 존재하는 아이디가 주어지면") {
                 coEvery { userService.createUser(any()) } throws UsernameAlreadyExistException()
-                withMockUser()
 
                 it("상태 코드 409와 에러를 반환한다.") {
                     webClient
