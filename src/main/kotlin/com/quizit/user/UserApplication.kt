@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class UserApplication
 
 fun main(args: Array<String>) {
-    runApplication<com.quizit.user.UserApplication>(*args)
+    runApplication<UserApplication>(*args)
 }

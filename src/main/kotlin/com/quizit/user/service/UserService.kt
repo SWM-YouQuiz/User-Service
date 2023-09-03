@@ -25,10 +25,6 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
-    fun getUsers(): Flow<UserResponse> =
-        userRepository.findAll()
-            .map { UserResponse(it) }
-
     fun getRanking(): Flow<UserResponse> =
         userRepository.findAllOrderByCorrectQuizIdsSize()
             .map { UserResponse(it) }
@@ -54,12 +50,14 @@ class UserService(
                     username = username,
                     password = passwordEncoder.encode(password),
                     nickname = nickname,
+                    image = image,
                     role = Role.USER,
                     allowPush = allowPush,
+                    dailyTarget = dailyTarget,
                     answerRate = 0.0,
                     correctQuizIds = mutableSetOf(),
                     incorrectQuizIds = mutableSetOf(),
-                    likedQuizIds = mutableSetOf()
+                    likedQuizIds = mutableSetOf(),
                 )
             ).let { UserResponse(it) }
         }
@@ -72,11 +70,14 @@ class UserService(
                 if ((authentication.id == it.id) || authentication.isAdmin()) {
                     userRepository.save(
                         User(
+                            id = id,
                             username = it.username,
                             password = it.password,
                             nickname = nickname,
+                            image = image,
                             role = it.role,
                             allowPush = allowPush,
+                            dailyTarget = dailyTarget,
                             answerRate = it.answerRate,
                             correctQuizIds = it.correctQuizIds,
                             incorrectQuizIds = it.incorrectQuizIds,
@@ -96,11 +97,14 @@ class UserService(
                     if (passwordEncoder.matches(password, it.password)) {
                         userRepository.save(
                             User(
+                                id = id,
                                 username = it.username,
                                 password = passwordEncoder.encode(newPassword),
                                 nickname = it.nickname,
+                                image = it.image,
                                 role = it.role,
                                 allowPush = it.allowPush,
+                                dailyTarget = it.dailyTarget,
                                 answerRate = it.answerRate,
                                 correctQuizIds = it.correctQuizIds,
                                 incorrectQuizIds = it.incorrectQuizIds,

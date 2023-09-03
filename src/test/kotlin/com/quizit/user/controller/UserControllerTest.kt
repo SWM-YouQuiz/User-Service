@@ -33,7 +33,9 @@ class UserControllerTest : BaseControllerTest() {
         "username" desc "아이디",
         "password" desc "패스워드",
         "nickname" desc "닉네임",
-        "allowPush" desc "알림 여부"
+        "image" desc "프로필 사진",
+        "allowPush" desc "알림 여부",
+        "dailyTarget" desc "하루 목표",
     )
 
     private val matchPasswordRequestFields = listOf(
@@ -42,7 +44,9 @@ class UserControllerTest : BaseControllerTest() {
 
     private val updateUserByIdRequestFields = listOf(
         "nickname" desc "닉네임",
-        "allowPush" desc "알림 여부"
+        "image" desc "프로필 사진",
+        "allowPush" desc "알림 여부",
+        "dailyTarget" desc "하루 목표",
     )
 
     private val changePasswordRequestFields = listOf(
@@ -54,8 +58,10 @@ class UserControllerTest : BaseControllerTest() {
         "id" desc "식별자",
         "username" desc "아이디",
         "nickname" desc "닉네임",
+        "image" desc "프로필 사진",
         "role" desc "권한",
         "allowPush" desc "알림 여부",
+        "dailyTarget" desc "하루 목표",
         "answerRate" desc "정답률",
         "correctQuizIds" desc "맞은 퀴즈 리스트",
         "incorrectQuizIds" desc "틀린 퀴즈 리스트",
@@ -70,33 +76,10 @@ class UserControllerTest : BaseControllerTest() {
     )
 
     init {
-        describe("getUsers()은") {
-            context("요청이 주어지면") {
-                coEvery { userService.getUsers() } returns flowOf(createUserResponse())
-
-                it("상태 코드 200과 userResponse들을 반환한다.") {
-                    webClient
-                        .get()
-                        .uri("/user")
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody(List::class.java)
-                        .consumeWith(
-                            WebTestClientRestDocumentationWrapper.document(
-                                "유저 전체 조회 성공(200)",
-                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
-                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
-                                responseFields(userResponsesFields)
-                            )
-                        )
-                }
-            }
-        }
-
         describe("getRanking()은") {
             context("요청이 주어지면") {
                 coEvery { userService.getRanking() } returns flowOf(createUserResponse())
+                withMockUser()
 
                 it("상태 코드 200과 랭킹 순서에 맞게 userResponse들을 반환한다.") {
                     webClient
@@ -121,6 +104,7 @@ class UserControllerTest : BaseControllerTest() {
         describe("getUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } returns createUserResponse()
+                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
@@ -144,6 +128,7 @@ class UserControllerTest : BaseControllerTest() {
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
                 coEvery { userService.getUserById(any()) } throws UserNotFoundException()
+                withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -315,7 +300,6 @@ class UserControllerTest : BaseControllerTest() {
                 }
             }
         }
-
 
         describe("updateUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {

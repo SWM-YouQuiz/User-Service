@@ -14,8 +14,10 @@ import java.time.LocalDateTime
 const val USERNAME = "earlgrey02@github.com"
 const val NICKNAME = "earlgrey02"
 const val PASSWORD = "root"
+const val IMAGE = "test"
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
+const val DAILY_TARGET = 10
 const val ANSWER_RATE = 50.0
 val CORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
 val INCORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
@@ -26,13 +28,17 @@ fun createCreateUserRequest(
     username: String = USERNAME,
     password: String = PASSWORD,
     nickname: String = NICKNAME,
+    image: String = IMAGE,
     allowPush: Boolean = ALLOW_PUSH,
+    dailyTarget: Int = DAILY_TARGET
 ): CreateUserRequest =
     CreateUserRequest(
         username = username,
         password = password,
         nickname = nickname,
-        allowPush = allowPush
+        image = image,
+        allowPush = allowPush,
+        dailyTarget = dailyTarget
     )
 
 fun createMatchPasswordRequest(
@@ -49,8 +55,10 @@ fun createUserResponse(
     id: String = ID,
     username: String = USERNAME,
     nickname: String = NICKNAME,
+    image: String = IMAGE,
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
+    dailyTarget: Int = DAILY_TARGET,
     answerRate: Double = ANSWER_RATE,
     createdDate: LocalDateTime = CREATED_DATE,
     correctQuizIds: Set<String> = CORRECT_QUIZ_IDS,
@@ -61,8 +69,10 @@ fun createUserResponse(
         id = id,
         username = username,
         nickname = nickname,
+        image = image,
         role = role,
         allowPush = allowPush,
+        dailyTarget = dailyTarget,
         answerRate = answerRate,
         createdDate = createdDate,
         correctQuizIds = correctQuizIds,
@@ -72,11 +82,15 @@ fun createUserResponse(
 
 fun createUpdateUserByIdRequest(
     nickname: String = NICKNAME,
+    image: String = IMAGE,
     allowPush: Boolean = ALLOW_PUSH,
+    dailyTarget: Int = DAILY_TARGET
 ): UpdateUserByIdRequest =
     UpdateUserByIdRequest(
         nickname = nickname,
-        allowPush = allowPush
+        image = image,
+        allowPush = allowPush,
+        dailyTarget = dailyTarget
     )
 
 fun createChangePasswordRequest(
@@ -93,8 +107,10 @@ fun createUser(
     username: String = USERNAME,
     password: String = PASSWORD,
     nickname: String = NICKNAME,
+    image: String = IMAGE,
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
+    dailyTarget: Int = DAILY_TARGET,
     answerRate: Double = ANSWER_RATE,
     correctQuizIds: MutableSet<String> = CORRECT_QUIZ_IDS.toMutableSet(),
     incorrectQuizIds: MutableSet<String> = INCORRECT_QUIZ_IDS.toMutableSet(),
@@ -105,8 +121,10 @@ fun createUser(
     username = username,
     password = BCryptPasswordEncoder().encode(password),
     nickname = nickname,
+    image = image,
     role = role,
     allowPush = allowPush,
+    dailyTarget = dailyTarget,
     answerRate = answerRate,
     correctQuizIds = correctQuizIds,
     incorrectQuizIds = incorrectQuizIds,

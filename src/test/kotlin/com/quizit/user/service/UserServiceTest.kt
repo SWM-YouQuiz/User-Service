@@ -35,14 +35,6 @@ class UserServiceTest : BehaviorSpec() {
 
             coEvery { userRepository.deleteById(any()) } just runs
 
-            When("모든 유저 조회를 시도하면") {
-                val userResponses = userService.getUsers()
-
-                Then("모든 유저가 조회된다.") {
-                    userResponses.collect { it shouldBeEqualToComparingFields UserResponse(user) }
-                }
-            }
-
             When("유저 랭킹 조회를 시도하면") {
                 val userResponses = userService.getRanking()
 
