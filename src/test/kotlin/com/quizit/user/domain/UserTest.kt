@@ -48,7 +48,10 @@ class UserTest : BehaviorSpec() {
             }
 
             When("유저의 경험치가 일정 수준 이상 도달했다면") {
-                val levelUpUser = createUser().apply { levelUp() }
+                val levelUpUser = createUser().apply {
+                    correctQuizIds.addAll((1..level * 5).map { "quiz_$it" })
+                    checkLevel()
+                }
 
                 Then("해당 유저의 레벨이 증가한다.") {
                     levelUpUser.level shouldBeGreaterThan user.level
