@@ -43,8 +43,10 @@ class User(
         markedQuizIds.remove(quizId)
     }
 
-    fun levelUp() {
-        level += 1
+    fun checkLevel() {
+        if (correctQuizIds.size >= level * 5) {
+            level += 1
+        }
     }
 
     private fun changeAnswerRate() {
