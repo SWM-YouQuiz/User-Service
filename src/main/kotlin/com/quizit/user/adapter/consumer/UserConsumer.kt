@@ -18,7 +18,7 @@ class UserConsumer(
     private val objectMapper: ObjectMapper
 ) {
     @KafkaListener(id = "check-answer", topics = ["check-answer"])
-    fun checkQuiz(
+    fun checkAnswer(
         @Payload
         message: String
     ) = GlobalScope.launch {
