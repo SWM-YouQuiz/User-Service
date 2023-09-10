@@ -25,9 +25,16 @@ class UserConsumer(
         objectMapper.readValue(message, CheckAnswerEvent::class.java).run {
             userRepository.findById(userId)!!.let {
                 if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
-                    it.correctAnswer(quizId)
-                    userRepository.save(it)
+                    if (isAnswer) {
+                        it.correctAnswer(quizId)
+                        if (it.correctQuizIds.size >= it.level * 5) {
+                            it.levelUp()
+                        }
+                    } else {
+                        it.incorrectAnswer(quizId)
+                    }
                 }
+                userRepository.save(it)
             }
         }
     }
