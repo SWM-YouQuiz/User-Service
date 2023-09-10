@@ -15,6 +15,7 @@ const val USERNAME = "earlgrey02@github.com"
 const val NICKNAME = "earlgrey02"
 const val PASSWORD = "root"
 const val IMAGE = "test"
+const val LEVEL = 2
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
 const val DAILY_TARGET = 10
@@ -23,6 +24,7 @@ val CORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
 val INCORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
 val MARKED_QUIZ_IDS = mutableSetOf("quiz_1")
 const val IS_MATCHED = true
+val passwordEncoder = BCryptPasswordEncoder()
 
 fun createCreateUserRequest(
     username: String = USERNAME,
@@ -56,6 +58,7 @@ fun createUserResponse(
     username: String = USERNAME,
     nickname: String = NICKNAME,
     image: String = IMAGE,
+    level: Int = LEVEL,
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
     dailyTarget: Int = DAILY_TARGET,
@@ -70,6 +73,7 @@ fun createUserResponse(
         username = username,
         nickname = nickname,
         image = image,
+        level = level,
         role = role,
         allowPush = allowPush,
         dailyTarget = dailyTarget,
@@ -108,6 +112,7 @@ fun createUser(
     password: String = PASSWORD,
     nickname: String = NICKNAME,
     image: String = IMAGE,
+    level: Int = LEVEL,
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
     dailyTarget: Int = DAILY_TARGET,
@@ -119,9 +124,10 @@ fun createUser(
 ): User = User(
     id = id,
     username = username,
-    password = BCryptPasswordEncoder().encode(password),
+    password = passwordEncoder.encode(password),
     nickname = nickname,
     image = image,
+    level = level,
     role = role,
     allowPush = allowPush,
     dailyTarget = dailyTarget,

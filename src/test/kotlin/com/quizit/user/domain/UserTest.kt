@@ -14,18 +14,20 @@ class UserTest : BehaviorSpec() {
             val user = createUser()
 
             When("유저가 퀴즈의 정답을 맞췄다면") {
-                val increasedUser = createUser().apply { correctAnswer(ID) }
+                val correctAnswerUser = createUser().apply {
+                    correctAnswer(ID)
+                }
 
                 Then("해당 유저의 정답률이 상승한다.") {
-                    increasedUser.answerRate shouldBeGreaterThan user.answerRate
+                    correctAnswerUser.answerRate shouldBeGreaterThan user.answerRate
                 }
             }
 
             When("유저가 퀴즈의 정답을 틀렸다면") {
-                val decreasedUser = createUser().apply { incorrectAnswer(ID) }
+                val incorrectAnswerUser = createUser().apply { incorrectAnswer(ID) }
 
                 Then("해당 유저의 정답률이 감소한다.") {
-                    decreasedUser.answerRate shouldBeLessThan user.answerRate
+                    incorrectAnswerUser.answerRate shouldBeLessThan user.answerRate
                 }
             }
 
@@ -42,6 +44,17 @@ class UserTest : BehaviorSpec() {
 
                 Then("해당 퀴즈가 유저의 저장한 퀴즈에서 삭제된다.") {
                     unmarkUser.markedQuizIds.size shouldBeLessThan user.markedQuizIds.size
+                }
+            }
+
+            When("유저의 경험치가 일정 수준 이상 도달했다면") {
+                val levelUpUser = createUser().apply {
+                    correctQuizIds.addAll((1..level * 5).map { "quiz_$it" })
+                    checkLevel()
+                }
+
+                Then("해당 유저의 레벨이 증가한다.") {
+                    levelUpUser.level shouldBeGreaterThan user.level
                 }
             }
         }

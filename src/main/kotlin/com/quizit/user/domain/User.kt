@@ -13,7 +13,8 @@ class User(
     val username: String,
     val password: String,
     val nickname: String,
-    val image: String?,
+    val image: String,
+    var level: Int,
     val role: Role,
     val allowPush: Boolean,
     val dailyTarget: Int,
@@ -40,6 +41,12 @@ class User(
 
     fun unmarkQuiz(quizId: String) {
         markedQuizIds.remove(quizId)
+    }
+
+    fun checkLevel() {
+        if (correctQuizIds.size >= level * 5) {
+            level += 1
+        }
     }
 
     private fun changeAnswerRate() {

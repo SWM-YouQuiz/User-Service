@@ -18,16 +18,21 @@ class UserConsumer(
     private val objectMapper: ObjectMapper
 ) {
     @KafkaListener(id = "check-answer", topics = ["check-answer"])
-    fun checkQuiz(
+    fun checkAnswer(
         @Payload
         message: String
     ) = GlobalScope.launch {
         objectMapper.readValue(message, CheckAnswerEvent::class.java).run {
             userRepository.findById(userId)!!.let {
                 if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
-                    it.correctAnswer(quizId)
-                    userRepository.save(it)
+                    if (isAnswer) {
+                        it.correctAnswer(quizId)
+                        it.checkLevel()
+                    } else {
+                        it.incorrectAnswer(quizId)
+                    }
                 }
+                userRepository.save(it)
             }
         }
     }
