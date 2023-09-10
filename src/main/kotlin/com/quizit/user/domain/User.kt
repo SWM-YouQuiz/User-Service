@@ -43,6 +43,10 @@ class User(
         markedQuizIds.remove(quizId)
     }
 
+    fun levelUp() {
+        level += 1
+    }
+
     private fun changeAnswerRate() {
         answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
     }
