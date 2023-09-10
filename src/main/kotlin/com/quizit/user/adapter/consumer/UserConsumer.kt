@@ -27,9 +27,7 @@ class UserConsumer(
                 if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
                     if (isAnswer) {
                         it.correctAnswer(quizId)
-                        if (it.correctQuizIds.size >= it.level * 5) {
-                            it.levelUp()
-                        }
+                        it.checkLevel()
                     } else {
                         it.incorrectAnswer(quizId)
                     }
