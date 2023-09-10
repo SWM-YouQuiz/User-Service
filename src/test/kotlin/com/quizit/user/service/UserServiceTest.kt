@@ -12,12 +12,9 @@ import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.flow.flowOf
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 class UserServiceTest : BehaviorSpec() {
     private val userRepository = mockk<UserRepository>()
-
-    private val passwordEncoder = BCryptPasswordEncoder()
 
     private val userService: UserService = UserService(
         userRepository = userRepository,

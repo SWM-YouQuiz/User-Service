@@ -59,6 +59,7 @@ class UserControllerTest : BaseControllerTest() {
         "username" desc "아이디",
         "nickname" desc "닉네임",
         "image" desc "프로필 사진",
+        "level" desc "레벨",
         "role" desc "권한",
         "allowPush" desc "알림 여부",
         "dailyTarget" desc "하루 목표",
