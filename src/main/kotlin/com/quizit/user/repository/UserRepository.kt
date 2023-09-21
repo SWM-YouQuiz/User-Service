@@ -1,14 +1,15 @@
 package com.quizit.user.repository
 
 import com.quizit.user.domain.User
-import kotlinx.coroutines.flow.Flow
 import org.springframework.data.mongodb.repository.Aggregation
-import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Repository
-interface UserRepository : CoroutineCrudRepository<User, String> {
-    suspend fun findByUsername(username: String): User?
+interface UserRepository : ReactiveMongoRepository<User, String> {
+    fun findByUsername(username: String): Mono<User>
 
     @Aggregation(
         pipeline = [
@@ -16,5 +17,5 @@ interface UserRepository : CoroutineCrudRepository<User, String> {
             "{ \$sort: { quizCount: -1 } }"
         ]
     )
-    fun findAllOrderByCorrectQuizIdsSize(): Flow<User>
+    fun findAllOrderByCorrectQuizIdsSize(): Flux<User>
 }

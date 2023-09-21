@@ -15,8 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
-import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.awaitPrincipal
 
 @Configuration
 @EnableWebFluxSecurity
@@ -50,8 +48,5 @@ class SecurityConfiguration {
         }
 }
 
-suspend fun ServerRequest.awaitAuthentication(): DefaultJwtAuthentication =
-    this.awaitPrincipal() as DefaultJwtAuthentication
-
 fun DefaultJwtAuthentication.isAdmin(): Boolean =
-    this.isAuthenticated and (this.authorities[0] == SimpleGrantedAuthority("ADMIN"))
+    isAuthenticated and (authorities[0] == SimpleGrantedAuthority("ADMIN"))

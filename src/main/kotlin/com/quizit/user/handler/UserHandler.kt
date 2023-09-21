@@ -1,71 +1,76 @@
 package com.quizit.user.handler
 
+import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
 import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
-import com.quizit.user.global.config.awaitAuthentication
 import com.quizit.user.service.UserService
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.body
+import org.springframework.web.reactive.function.server.bodyToMono
+import reactor.core.publisher.Mono
 
 @Component
 class UserHandler(
     private val userService: UserService
 ) {
-    suspend fun getRanking(request: ServerRequest): ServerResponse =
-        ServerResponse.ok().bodyAndAwait(userService.getRanking())
+    fun getRanking(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(userService.getRanking())
 
-    suspend fun getUserById(request: ServerRequest): ServerResponse =
-        request.pathVariable("id").let {
-            ServerResponse.ok().bodyValueAndAwait(userService.getUserById(it))
-        }
+    fun getUserById(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(userService.getUserById(request.pathVariable("id")))
 
-    suspend fun getUserByUsername(request: ServerRequest): ServerResponse =
-        request.pathVariable("username").let {
-            ServerResponse.ok().bodyValueAndAwait(userService.getUserByUsername(it))
-        }
+    fun getUserByUsername(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(userService.getUserByUsername(request.pathVariable("username")))
 
-    suspend fun matchPassword(request: ServerRequest): ServerResponse =
+    fun matchPassword(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val username = pathVariable("username")
-            val matchPasswordRequest = awaitBody<MatchPasswordRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(userService.matchPassword(username, matchPasswordRequest))
+            bodyToMono<MatchPasswordRequest>()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(userService.matchPassword(pathVariable("username"), it))
+                }
         }
 
-    suspend fun createUser(request: ServerRequest): ServerResponse =
-        request.awaitBody<CreateUserRequest>().let {
-            ServerResponse.ok().bodyValueAndAwait(userService.createUser(it))
-        }
-
-    suspend fun updateUserById(request: ServerRequest): ServerResponse =
+    fun createUser(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val authentication = awaitAuthentication()
-            val updateUserByIdRequest = awaitBody<UpdateUserByIdRequest>()
-
-            ServerResponse.ok().bodyValueAndAwait(userService.updateUserById(id, authentication, updateUserByIdRequest))
+            bodyToMono<CreateUserRequest>()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(userService.createUser(it))
+                }
         }
 
-    suspend fun changePassword(request: ServerRequest): ServerResponse =
+    fun updateUserById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val authentication = awaitAuthentication()
-            val changePasswordRequest = awaitBody<ChangePasswordRequest>()
-
-            userService.changePassword(id, authentication, changePasswordRequest)
-
-            ServerResponse.ok().buildAndAwait()
+            Mono.zip(principal(), bodyToMono<UpdateUserByIdRequest>())
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(userService.updateUserById(pathVariable("id"), it.t1 as DefaultJwtAuthentication, it.t2))
+                }
         }
 
-    suspend fun deleteUserById(request: ServerRequest): ServerResponse =
+    fun changePassword(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            val id = pathVariable("id")
-            val authentication = awaitAuthentication()
+            Mono.zip(principal(), bodyToMono<ChangePasswordRequest>())
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(userService.changePassword(pathVariable("id"), it.t1 as DefaultJwtAuthentication, it.t2))
+                }
+        }
 
-            userService.deleteUserById(id, authentication)
-
-            ServerResponse.ok().buildAndAwait()
+    fun deleteUserById(request: ServerRequest): Mono<ServerResponse> =
+        with(request) {
+            principal()
+                .flatMap {
+                    ServerResponse.ok()
+                        .body(userService.deleteUserById(pathVariable("id"), it as DefaultJwtAuthentication))
+                }
         }
 }
