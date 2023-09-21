@@ -1,10 +1,12 @@
 package com.quizit.user.handler
 
-import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
 import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
+import com.quizit.user.global.config.authentication
+import com.quizit.user.global.util.component1
+import com.quizit.user.global.util.component2
 import com.quizit.user.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -49,28 +51,28 @@ class UserHandler(
 
     fun updateUserById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            Mono.zip(principal(), bodyToMono<UpdateUserByIdRequest>())
-                .flatMap {
+            Mono.zip(authentication(), bodyToMono<UpdateUserByIdRequest>())
+                .flatMap { (authentication, request) ->
                     ServerResponse.ok()
-                        .body(userService.updateUserById(pathVariable("id"), it.t1 as DefaultJwtAuthentication, it.t2))
+                        .body(userService.updateUserById(pathVariable("id"), authentication, request))
                 }
         }
 
     fun changePassword(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            Mono.zip(principal(), bodyToMono<ChangePasswordRequest>())
-                .flatMap {
+            Mono.zip(authentication(), bodyToMono<ChangePasswordRequest>())
+                .flatMap { (authentication, request) ->
                     ServerResponse.ok()
-                        .body(userService.changePassword(pathVariable("id"), it.t1 as DefaultJwtAuthentication, it.t2))
+                        .body(userService.changePassword(pathVariable("id"), authentication, request))
                 }
         }
 
     fun deleteUserById(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            principal()
+            authentication()
                 .flatMap {
                     ServerResponse.ok()
-                        .body(userService.deleteUserById(pathVariable("id"), it as DefaultJwtAuthentication))
+                        .body(userService.deleteUserById(pathVariable("id"), it))
                 }
         }
 }
