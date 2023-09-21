@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
+import org.springframework.web.reactive.function.server.ServerRequest
+import reactor.core.publisher.Mono
 
 @Configuration
 @EnableWebFluxSecurity
@@ -48,5 +50,8 @@ class SecurityConfiguration {
         }
 }
 
+fun ServerRequest.authentication(): Mono<DefaultJwtAuthentication> =
+    principal().cast(DefaultJwtAuthentication::class.java)
+
 fun DefaultJwtAuthentication.isAdmin(): Boolean =
-    isAuthenticated and (authorities[0] == SimpleGrantedAuthority("ADMIN"))
+    isAuthenticated && (authorities[0] == SimpleGrantedAuthority("ADMIN"))
