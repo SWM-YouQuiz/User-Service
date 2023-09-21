@@ -7,6 +7,7 @@ import com.quizit.user.repository.UserRepository
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
@@ -22,19 +23,23 @@ class UserConsumer(
         @Payload
         message: String
     ) = GlobalScope.launch {
-        objectMapper.readValue(message, CheckAnswerEvent::class.java).run {
-            userRepository.findById(userId)!!.let {
-                if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
-                    if (isAnswer) {
-                        it.correctAnswer(quizId)
-                        it.checkLevel()
-                    } else {
-                        it.incorrectAnswer(quizId)
+        objectMapper.readValue(message, CheckAnswerEvent::class.java)
+            .run {
+                userRepository.findById(userId)
+                    .awaitSingle()
+                    .let {
+                        if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
+                            if (isAnswer) {
+                                it.correctAnswer(quizId)
+                                it.checkLevel()
+                            } else {
+                                it.incorrectAnswer(quizId)
+                            }
+                        }
+                        userRepository.save(it)
+                            .awaitSingle()
                     }
-                }
-                userRepository.save(it)
             }
-        }
     }
 
     @KafkaListener(id = "mark-quiz", topics = ["mark-quiz"])
@@ -42,15 +47,19 @@ class UserConsumer(
         @Payload
         message: String
     ) = GlobalScope.launch {
-        objectMapper.readValue(message, MarkQuizEvent::class.java).run {
-            userRepository.findById(userId)!!.let {
-                if (isMarked) {
-                    it.markQuiz(quizId)
-                } else {
-                    it.unmarkQuiz(quizId)
-                }
-                userRepository.save(it)
+        objectMapper.readValue(message, MarkQuizEvent::class.java)
+            .run {
+                userRepository.findById(userId)
+                    .awaitSingle()
+                    .let {
+                        if (isMarked) {
+                            it.markQuiz(quizId)
+                        } else {
+                            it.unmarkQuiz(quizId)
+                        }
+                        userRepository.save(it)
+                            .awaitSingle()
+                    }
             }
-        }
     }
 }
