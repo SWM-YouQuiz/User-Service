@@ -27,7 +27,7 @@ class UserService(
 ) {
     fun getRanking(): Flux<UserResponse> =
         userRepository.findAllOrderByCorrectQuizIdsSize()
-            .flatMap { Mono.just(UserResponse(it)) }
+            .map { UserResponse(it) }
 
     fun getUserById(id: String): Mono<UserResponse> =
         userRepository.findById(id)
