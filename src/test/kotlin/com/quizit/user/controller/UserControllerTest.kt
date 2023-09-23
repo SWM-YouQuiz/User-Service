@@ -14,7 +14,6 @@ import com.quizit.user.handler.UserHandler
 import com.quizit.user.router.UserRouter
 import com.quizit.user.service.UserService
 import com.quizit.user.util.*
-import io.mockk.coEvery
 import io.mockk.every
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.operation.preprocess.Preprocessors
@@ -128,7 +127,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
-                every { userService.getUserById(any()) } returns Mono.error(UserNotFoundException())
+                every { userService.getUserById(any()) } throws UserNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
@@ -177,7 +176,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                every { userService.getUserByUsername(any()) } returns Mono.error(UserNotFoundException())
+                every { userService.getUserByUsername(any()) } throws UserNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
@@ -228,7 +227,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("이미 존재하는 아이디가 주어지면") {
-                every { userService.createUser(any()) } returns Mono.error(UsernameAlreadyExistException())
+                every { userService.createUser(any()) } throws UsernameAlreadyExistException()
                 withMockUser()
 
                 it("상태 코드 409와 에러를 반환한다.") {
@@ -280,7 +279,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                every { userService.matchPassword(any(), any()) } returns Mono.error(UserNotFoundException())
+                every { userService.matchPassword(any(), any()) } throws UserNotFoundException()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
@@ -331,7 +330,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
-                every { userService.updateUserById(any(), any(), any()) } returns Mono.error(UserNotFoundException())
+                every { userService.updateUserById(any(), any(), any()) } throws UserNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
@@ -356,9 +355,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("본인이 아닌 다른 유저의 식별자가 주어지면") {
-                every { userService.updateUserById(any(), any(), any()) } returns Mono.error(
-                    PermissionDeniedException()
-                )
+                every { userService.updateUserById(any(), any(), any()) } throws PermissionDeniedException()
                 withMockUser()
 
                 it("상태 코드 403과 에러를 반환한다.") {
@@ -409,7 +406,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } returns Mono.error(UserNotFoundException())
+                every { userService.changePassword(any(), any(), any()) } throws UserNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
@@ -434,9 +431,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("본인이 아닌 다른 유저의 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } returns Mono.error(
-                    PermissionDeniedException()
-                )
+                every { userService.changePassword(any(), any(), any()) } throws PermissionDeniedException()
                 withMockUser()
 
                 it("상태 코드 403과 에러를 반환한다.") {
@@ -461,9 +456,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("현재 패스워드가 일치하지 않으면") {
-                every { userService.changePassword(any(), any(), any()) } returns Mono.error(
-                    PasswordNotMatchException()
-                )
+                every { userService.changePassword(any(), any(), any()) } throws PasswordNotMatchException()
                 withMockUser()
 
                 it("상태 코드 400과 에러를 반환한다.") {
@@ -512,7 +505,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("존재하지 않는 유저에 대한 식별자가 주어지면") {
-                every { userService.deleteUserById(any(), any()) } returns Mono.error(UserNotFoundException())
+                every { userService.deleteUserById(any(), any()) } throws UserNotFoundException()
                 withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
@@ -535,7 +528,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("본인이 아닌 다른 유저의 식별자가 주어지면") {
-                coEvery { userService.deleteUserById(any(), any()) } returns Mono.error(PermissionDeniedException())
+                every { userService.deleteUserById(any(), any()) } throws PermissionDeniedException()
                 withMockUser()
 
                 it("상태 코드 403과 에러를 반환한다.") {
