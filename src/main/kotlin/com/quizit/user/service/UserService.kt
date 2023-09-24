@@ -50,60 +50,36 @@ class UserService(
         with(request) {
             userRepository.findByUsername(username)
                 .flatMap { Mono.error<User>(UsernameAlreadyExistException()) }
-                .switchIfEmpty(
-                    Mono.defer {
-                        userRepository.save(
-                            User(
-                                username = username,
-                                password = passwordEncoder.encode(password),
-                                nickname = nickname,
-                                image = image,
-                                level = 1,
-                                role = Role.USER,
-                                allowPush = allowPush,
-                                dailyTarget = dailyTarget,
-                                answerRate = 0.0,
-                                correctQuizIds = mutableSetOf(),
-                                incorrectQuizIds = mutableSetOf(),
-                                markedQuizIds = mutableSetOf(),
-                            )
-                        )
-                    }
+                .defaultIfEmpty(
+                    User(
+                        username = username,
+                        password = passwordEncoder.encode(password),
+                        nickname = nickname,
+                        image = image,
+                        level = 1,
+                        role = Role.USER,
+                        allowPush = allowPush,
+                        dailyTarget = dailyTarget,
+                        answerRate = 0.0,
+                        correctQuizIds = hashSetOf(),
+                        incorrectQuizIds = hashSetOf(),
+                        markedQuizIds = hashSetOf(),
+                    )
                 )
+                .flatMap { userRepository.save(it) }
                 .map { UserResponse(it) }
         }
 
     fun updateUserById(
         id: String, authentication: DefaultJwtAuthentication, request: UpdateUserByIdRequest
     ): Mono<UserResponse> =
-        with(request) {
-            userRepository.findById(id)
-                .switchIfEmpty(Mono.error(UserNotFoundException()))
-                .flatMap {
-                    if ((authentication.id == it.id) || authentication.isAdmin()) {
-                        userRepository.save(
-                            User(
-                                id = id,
-                                username = it.username,
-                                password = it.password,
-                                nickname = nickname,
-                                image = image,
-                                level = it.level,
-                                role = it.role,
-                                allowPush = allowPush,
-                                dailyTarget = dailyTarget,
-                                answerRate = it.answerRate,
-                                correctQuizIds = it.correctQuizIds,
-                                incorrectQuizIds = it.incorrectQuizIds,
-                                markedQuizIds = it.markedQuizIds
-                            )
-                        )
-                    } else {
-                        Mono.error(PermissionDeniedException())
-                    }
-                }
-                .map { UserResponse(it) }
-        }
+        userRepository.findById(id)
+            .switchIfEmpty(Mono.error(UserNotFoundException()))
+            .filter { (authentication.id == it.id) || authentication.isAdmin() }
+            .switchIfEmpty(Mono.error(PermissionDeniedException()))
+            .map { request.run { it.update(nickname, image, allowPush, dailyTarget) } }
+            .flatMap { userRepository.save(it) }
+            .map { UserResponse(it) }
 
     fun changePassword(
         id: String, authentication: DefaultJwtAuthentication, request: ChangePasswordRequest
@@ -111,43 +87,19 @@ class UserService(
         with(request) {
             userRepository.findById(id)
                 .switchIfEmpty(Mono.error(UserNotFoundException()))
-                .flatMap {
-                    if ((authentication.id == it.id) || authentication.isAdmin()) {
-                        if (passwordEncoder.matches(password, it.password)) {
-                            userRepository.save(
-                                User(
-                                    id = id,
-                                    username = it.username,
-                                    password = passwordEncoder.encode(newPassword),
-                                    nickname = it.nickname,
-                                    image = it.image,
-                                    level = it.level,
-                                    role = it.role,
-                                    allowPush = it.allowPush,
-                                    dailyTarget = it.dailyTarget,
-                                    answerRate = it.answerRate,
-                                    correctQuizIds = it.correctQuizIds,
-                                    incorrectQuizIds = it.incorrectQuizIds,
-                                    markedQuizIds = it.markedQuizIds
-                                )
-                            ).then()
-                        } else {
-                            Mono.error(PasswordNotMatchException())
-                        }
-                    } else {
-                        Mono.error(PermissionDeniedException())
-                    }
-                }
+                .filter { (authentication.id == it.id) || authentication.isAdmin() }
+                .switchIfEmpty(Mono.error(PermissionDeniedException()))
+                .filter { passwordEncoder.matches(password, it.password) }
+                .switchIfEmpty(Mono.error(PasswordNotMatchException()))
+                .map { it.updatePassword(passwordEncoder.encode(newPassword)) }
+                .flatMap { userRepository.save(it) }
+                .then()
         }
 
     fun deleteUserById(id: String, authentication: DefaultJwtAuthentication): Mono<Void> =
         userRepository.findById(id)
             .switchIfEmpty(Mono.error(UserNotFoundException()))
-            .flatMap {
-                if ((authentication.id == it.id) || authentication.isAdmin()) {
-                    userRepository.deleteById(id)
-                } else {
-                    Mono.error(PermissionDeniedException())
-                }
-            }
+            .filter { (authentication.id == it.id) || authentication.isAdmin() }
+            .switchIfEmpty(Mono.error(PermissionDeniedException()))
+            .flatMap { userRepository.deleteById(id) }
 }

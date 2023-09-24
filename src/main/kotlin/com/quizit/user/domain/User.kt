@@ -11,17 +11,17 @@ class User(
     @Id
     var id: String? = null,
     val username: String,
-    val password: String,
-    val nickname: String,
-    val image: String,
+    var password: String,
+    var nickname: String,
+    var image: String,
     var level: Int,
     val role: Role,
-    val allowPush: Boolean,
-    val dailyTarget: Int,
+    var allowPush: Boolean,
+    var dailyTarget: Int,
     var answerRate: Double,
-    val correctQuizIds: MutableSet<String>,
-    val incorrectQuizIds: MutableSet<String>,
-    val markedQuizIds: MutableSet<String>,
+    val correctQuizIds: HashSet<String>,
+    val incorrectQuizIds: HashSet<String>,
+    val markedQuizIds: HashSet<String>,
     @CreatedDate
     var createdDate: LocalDateTime = LocalDateTime.now()
 ) {
@@ -52,4 +52,15 @@ class User(
     private fun changeAnswerRate() {
         answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
     }
+
+    fun update(nickname: String, image: String, allowPush: Boolean, dailyTarget: Int): User =
+        also {
+            it.nickname = nickname
+            it.image = image
+            it.allowPush = allowPush
+            it.dailyTarget = dailyTarget
+        }
+
+    fun updatePassword(password: String): User =
+        also { it.password = password }
 }

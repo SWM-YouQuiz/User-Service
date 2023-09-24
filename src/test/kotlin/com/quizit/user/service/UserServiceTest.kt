@@ -1,5 +1,6 @@
 package com.quizit.user.service
 
+import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.PermissionDeniedException
 import com.quizit.user.exception.UserNotFoundException
 import com.quizit.user.exception.UsernameAlreadyExistException
@@ -7,7 +8,6 @@ import com.quizit.user.fixture.*
 import com.quizit.user.repository.UserRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -30,20 +30,22 @@ class UserServiceTest : BehaviorSpec() {
 
     init {
         Given("유저가 존재하는 경우") {
-            createUser().also {
-                every { userRepository.findAll() } returns Flux.just(it)
-                every { userRepository.findAllOrderByCorrectQuizIdsSize() } returns Flux.just(it)
-                every { userRepository.findById(any<String>()) } returns Mono.just(it)
-                every { userRepository.findByUsername(any()) } returns Mono.just(it)
-                every { userRepository.deleteById(any<String>()) } returns Mono.empty()
-            }
+            val user = createUser()
+                .also {
+                    every { userRepository.findAll() } returns Flux.just(it)
+                    every { userRepository.findAllOrderByCorrectQuizIdsSize() } returns Flux.just(it)
+                    every { userRepository.findById(any<String>()) } returns Mono.just(it)
+                    every { userRepository.findByUsername(any()) } returns Mono.just(it)
+                    every { userRepository.deleteById(any<String>()) } returns Mono.empty()
+                }
+            val userResponse = UserResponse(user)
 
-            When("유저 랭킹 조회를 시도하면") {
+            When("랭킹 조회를 시도하면") {
                 val result = StepVerifier.create(userService.getRanking())
 
                 Then("모든 유저에 대한 랭킹이 조회된다.") {
                     result.expectSubscription()
-                        .expectNext(createUserResponse())
+                        .expectNext(userResponse)
                         .verifyComplete()
                 }
             }
@@ -53,7 +55,7 @@ class UserServiceTest : BehaviorSpec() {
 
                 Then("식별자에 맞는 유저가 조회된다.") {
                     result.expectSubscription()
-                        .expectNext(createUserResponse())
+                        .expectNext(userResponse)
                         .verifyComplete()
                 }
             }
@@ -63,13 +65,15 @@ class UserServiceTest : BehaviorSpec() {
 
                 Then("아이디에 맞는 유저가 조회된다.") {
                     result.expectSubscription()
-                        .expectNext(createUserResponse())
+                        .expectNext(userResponse)
                         .verifyComplete()
                 }
             }
 
             When("아이디를 통해 패스워드 일치 여부를 확인하면") {
-                val result = StepVerifier.create(userService.matchPassword(USERNAME, createMatchPasswordRequest()))
+                val result = StepVerifier.create(
+                    userService.matchPassword(USERNAME, createMatchPasswordRequest())
+                )
 
                 Then("아이디에 맞는 유저의 패스워드 일치 여부가 확인된다.") {
                     result.expectSubscription()
@@ -121,10 +125,11 @@ class UserServiceTest : BehaviorSpec() {
         }
 
         Given("유저가 존재하지 않는 경우") {
-            createUser().apply {
-                every { userRepository.findById(any<String>()) } returns Mono.empty()
-                every { userRepository.findByUsername(any()) } returns Mono.empty()
-            }
+            createUser()
+                .apply {
+                    every { userRepository.findById(any<String>()) } returns Mono.empty()
+                    every { userRepository.findByUsername(any()) } returns Mono.empty()
+                }
 
             When("식별자를 통해 유저 조회를 시도하면") {
                 val result = StepVerifier.create(userService.getUserById(ID))
@@ -168,26 +173,29 @@ class UserServiceTest : BehaviorSpec() {
         }
 
         Given("해당 아이디를 가진 유저가 없는 경우") {
-            createUser().also {
-                every { userRepository.save(any()) } returns Mono.just(it)
-                every { userRepository.findByUsername(any()) } returns Mono.empty()
-            }
+            val user = createUser()
+                .also {
+                    every { userRepository.save(any()) } returns Mono.just(it)
+                    every { userRepository.findByUsername(any()) } returns Mono.empty()
+                }
+            val userResponse = UserResponse(user)
 
             When("유저가 회원가입을 시도하면") {
                 val result = StepVerifier.create(userService.createUser(createCreateUserRequest()))
 
                 Then("유저가 생성된다.") {
                     result.expectSubscription()
-                        .assertNext { it shouldBeEqualToComparingFields createUserResponse() }
+                        .expectNext(userResponse)
                         .verifyComplete()
                 }
             }
         }
 
         Given("해당 아이디를 가진 유저가 이미 존재하는 경우") {
-            createUser().also {
-                every { userRepository.findByUsername(any()) } returns Mono.just(it)
-            }
+            createUser()
+                .also {
+                    every { userRepository.findByUsername(any()) } returns Mono.just(it)
+                }
 
             When("유저가 회원가입을 시도하면") {
                 val result = StepVerifier.create(userService.createUser(createCreateUserRequest()))
@@ -201,9 +209,10 @@ class UserServiceTest : BehaviorSpec() {
         }
 
         Given("권한이 없는 경우") {
-            createUser().also {
-                every { userRepository.findById(any<String>()) } returns Mono.just(it)
-            }
+            createUser()
+                .also {
+                    every { userRepository.findById(any<String>()) } returns Mono.just(it)
+                }
 
             When("프로필을 수정하면") {
                 val result =

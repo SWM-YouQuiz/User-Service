@@ -51,7 +51,7 @@ class SecurityConfiguration {
 }
 
 fun ServerRequest.authentication(): Mono<DefaultJwtAuthentication> =
-    principal().cast(DefaultJwtAuthentication::class.java)
+    principal()
+        .cast(DefaultJwtAuthentication::class.java)
 
-fun DefaultJwtAuthentication.isAdmin(): Boolean =
-    isAuthenticated && (authorities[0] == SimpleGrantedAuthority("ADMIN"))
+fun DefaultJwtAuthentication.isAdmin(): Boolean = isAuthenticated && (authorities[0] == SimpleGrantedAuthority("ADMIN"))

@@ -14,15 +14,15 @@ import java.time.LocalDateTime
 const val USERNAME = "earlgrey02@github.com"
 const val NICKNAME = "earlgrey02"
 const val PASSWORD = "root"
-const val IMAGE = "test"
+const val IMAGE = "http://localhost:8080/image.jpg"
 const val LEVEL = 2
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
 const val DAILY_TARGET = 10
 const val ANSWER_RATE = 50.0
-val CORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
-val INCORRECT_QUIZ_IDS = mutableSetOf("quiz_1")
-val MARKED_QUIZ_IDS = mutableSetOf("quiz_1")
+val CORRECT_QUIZ_IDS = hashSetOf("1")
+val INCORRECT_QUIZ_IDS = hashSetOf("1")
+val MARKED_QUIZ_IDS = hashSetOf("1")
 const val IS_MATCHED = true
 val passwordEncoder = BCryptPasswordEncoder()
 
@@ -64,9 +64,9 @@ fun createUserResponse(
     dailyTarget: Int = DAILY_TARGET,
     answerRate: Double = ANSWER_RATE,
     createdDate: LocalDateTime = CREATED_DATE,
-    correctQuizIds: Set<String> = CORRECT_QUIZ_IDS,
-    incorrectQuizIds: Set<String> = INCORRECT_QUIZ_IDS,
-    markedQuizIds: Set<String> = MARKED_QUIZ_IDS,
+    correctQuizIds: HashSet<String> = CORRECT_QUIZ_IDS,
+    incorrectQuizIds: HashSet<String> = INCORRECT_QUIZ_IDS,
+    markedQuizIds: HashSet<String> = MARKED_QUIZ_IDS,
 ): UserResponse =
     UserResponse(
         id = id,
@@ -117,9 +117,9 @@ fun createUser(
     allowPush: Boolean = ALLOW_PUSH,
     dailyTarget: Int = DAILY_TARGET,
     answerRate: Double = ANSWER_RATE,
-    correctQuizIds: MutableSet<String> = CORRECT_QUIZ_IDS.toMutableSet(),
-    incorrectQuizIds: MutableSet<String> = INCORRECT_QUIZ_IDS.toMutableSet(),
-    markedQuizIds: MutableSet<String> = MARKED_QUIZ_IDS.toMutableSet(),
+    correctQuizIds: HashSet<String> = CORRECT_QUIZ_IDS.toHashSet(),
+    incorrectQuizIds: HashSet<String> = INCORRECT_QUIZ_IDS.toHashSet(),
+    markedQuizIds: HashSet<String> = MARKED_QUIZ_IDS.toHashSet(),
     createdDate: LocalDateTime = CREATED_DATE
 ): User = User(
     id = id,
