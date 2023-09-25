@@ -3,6 +3,7 @@ package com.quizit.user.global.config
 import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.github.jwt.authentication.JwtAuthenticationFilter
 import com.github.jwt.core.JwtProvider
+import com.quizit.user.domain.enum.Role
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -34,7 +35,7 @@ class SecurityConfiguration {
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             authorizeExchange {
                 it.pathMatchers("/user/admin/**")
-                    .hasAuthority("ADMIN")
+                    .hasAuthority(Role.ADMIN.name)
                     .pathMatchers(
                         "/actuator/health/**",
                         "/user",
@@ -54,4 +55,5 @@ fun ServerRequest.authentication(): Mono<DefaultJwtAuthentication> =
     principal()
         .cast(DefaultJwtAuthentication::class.java)
 
-fun DefaultJwtAuthentication.isAdmin(): Boolean = isAuthenticated && (authorities[0] == SimpleGrantedAuthority("ADMIN"))
+fun DefaultJwtAuthentication.isAdmin(): Boolean =
+    isAuthenticated && (authorities[0] == SimpleGrantedAuthority(Role.ADMIN.name))
