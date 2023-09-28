@@ -15,9 +15,9 @@ data class UserResponse(
     val dailyTarget: Int,
     val answerRate: Double,
     val createdDate: LocalDateTime,
-    val correctQuizIds: Set<String>,
-    val incorrectQuizIds: Set<String>,
-    val markedQuizIds: Set<String>
+    val correctQuizIds: HashSet<String>,
+    val incorrectQuizIds: HashSet<String>,
+    val markedQuizIds: HashSet<String>
 ) {
     companion object {
         operator fun invoke(user: User): UserResponse =

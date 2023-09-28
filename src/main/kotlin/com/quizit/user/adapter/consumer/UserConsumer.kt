@@ -5,8 +5,6 @@ import com.quizit.user.dto.event.CheckAnswerEvent
 import com.quizit.user.dto.event.MarkQuizEvent
 import com.quizit.user.repository.UserRepository
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
@@ -21,36 +19,40 @@ class UserConsumer(
     fun checkAnswer(
         @Payload
         message: String
-    ) = GlobalScope.launch {
-        objectMapper.readValue(message, CheckAnswerEvent::class.java).run {
-            userRepository.findById(userId)!!.let {
-                if ((quizId !in it.correctQuizIds) and (quizId !in it.incorrectQuizIds)) {
+    ) = with(objectMapper.readValue(message, CheckAnswerEvent::class.java)) {
+        userRepository.findById(userId)
+            .filter { (quizId !in it.correctQuizIds) && (quizId !in it.incorrectQuizIds) }
+            .map {
+                it.apply {
                     if (isAnswer) {
-                        it.correctAnswer(quizId)
-                        it.checkLevel()
+                        correctAnswer(quizId)
+                        checkLevel()
                     } else {
-                        it.incorrectAnswer(quizId)
+                        incorrectAnswer(quizId)
                     }
                 }
-                userRepository.save(it)
             }
-        }
+            .flatMap { userRepository.save(it) }
+            .subscribe()
     }
 
     @KafkaListener(id = "mark-quiz", topics = ["mark-quiz"])
     fun markQuiz(
         @Payload
         message: String
-    ) = GlobalScope.launch {
-        objectMapper.readValue(message, MarkQuizEvent::class.java).run {
-            userRepository.findById(userId)!!.let {
-                if (isMarked) {
-                    it.markQuiz(quizId)
-                } else {
-                    it.unmarkQuiz(quizId)
+    ) =
+        with(objectMapper.readValue(message, MarkQuizEvent::class.java)) {
+            userRepository.findById(userId)
+                .map {
+                    it.apply {
+                        if (isMarked) {
+                            markQuiz(quizId)
+                        } else {
+                            unmarkQuiz(quizId)
+                        }
+                    }
                 }
-                userRepository.save(it)
-            }
+                .flatMap { userRepository.save(it) }
+                .subscribe()
         }
-    }
 }

@@ -3,6 +3,7 @@ package com.quizit.user.global.config
 import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.github.jwt.authentication.JwtAuthenticationFilter
 import com.github.jwt.core.JwtProvider
+import com.quizit.user.domain.enum.Role
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -16,7 +17,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.awaitPrincipal
+import reactor.core.publisher.Mono
 
 @Configuration
 @EnableWebFluxSecurity
@@ -34,7 +35,7 @@ class SecurityConfiguration {
             securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             authorizeExchange {
                 it.pathMatchers("/user/admin/**")
-                    .hasAuthority("ADMIN")
+                    .hasAuthority(Role.ADMIN.name)
                     .pathMatchers(
                         "/actuator/health/**",
                         "/user",
@@ -50,8 +51,9 @@ class SecurityConfiguration {
         }
 }
 
-suspend fun ServerRequest.awaitAuthentication(): DefaultJwtAuthentication =
-    this.awaitPrincipal() as DefaultJwtAuthentication
+fun ServerRequest.authentication(): Mono<DefaultJwtAuthentication> =
+    principal()
+        .cast(DefaultJwtAuthentication::class.java)
 
 fun DefaultJwtAuthentication.isAdmin(): Boolean =
-    this.isAuthenticated and (this.authorities[0] == SimpleGrantedAuthority("ADMIN"))
+    isAuthenticated && (authorities[0] == SimpleGrantedAuthority(Role.ADMIN.name))

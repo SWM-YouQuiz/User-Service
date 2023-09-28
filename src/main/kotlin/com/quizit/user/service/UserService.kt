@@ -15,116 +15,91 @@ import com.quizit.user.exception.UserNotFoundException
 import com.quizit.user.exception.UsernameAlreadyExistException
 import com.quizit.user.global.config.isAdmin
 import com.quizit.user.repository.UserRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
-    fun getRanking(): Flow<UserResponse> =
+    fun getRanking(): Flux<UserResponse> =
         userRepository.findAllOrderByCorrectQuizIdsSize()
             .map { UserResponse(it) }
 
-    suspend fun getUserById(id: String): UserResponse =
-        userRepository.findById(id)?.let { UserResponse(it) } ?: throw UserNotFoundException()
+    fun getUserById(id: String): Mono<UserResponse> =
+        userRepository.findById(id)
+            .switchIfEmpty(Mono.error(UserNotFoundException()))
+            .map { UserResponse(it) }
 
-    suspend fun getUserByUsername(username: String): UserResponse =
-        userRepository.findByUsername(username)?.let { UserResponse(it) } ?: throw UserNotFoundException()
+    fun getUserByUsername(username: String): Mono<UserResponse> =
+        userRepository.findByUsername(username)
+            .switchIfEmpty(Mono.error(UserNotFoundException()))
+            .map { UserResponse(it) }
 
-    suspend fun matchPassword(username: String, request: MatchPasswordRequest): MatchPasswordResponse =
+    fun matchPassword(username: String, request: MatchPasswordRequest): Mono<MatchPasswordResponse> =
         with(request) {
-            userRepository.findByUsername(username)?.let {
-                MatchPasswordResponse(passwordEncoder.matches(password, it.password))
-            } ?: throw UserNotFoundException()
+            userRepository.findByUsername(username)
+                .switchIfEmpty(Mono.error(UserNotFoundException()))
+                .map { MatchPasswordResponse(passwordEncoder.matches(password, it.password)) }
         }
 
-    suspend fun createUser(request: CreateUserRequest): UserResponse =
+    fun createUser(request: CreateUserRequest): Mono<UserResponse> =
         with(request) {
-            userRepository.findByUsername(username)?.run { throw UsernameAlreadyExistException() }
-            userRepository.save(
-                User(
-                    username = username,
-                    password = passwordEncoder.encode(password),
-                    nickname = nickname,
-                    image = image,
-                    level = 1,
-                    role = Role.USER,
-                    allowPush = allowPush,
-                    dailyTarget = dailyTarget,
-                    answerRate = 0.0,
-                    correctQuizIds = mutableSetOf(),
-                    incorrectQuizIds = mutableSetOf(),
-                    markedQuizIds = mutableSetOf(),
-                )
-            ).let { UserResponse(it) }
-        }
-
-    suspend fun updateUserById(
-        id: String, authentication: DefaultJwtAuthentication, request: UpdateUserByIdRequest
-    ): UserResponse =
-        with(request) {
-            userRepository.findById(id)?.let {
-                if ((authentication.id == it.id) || authentication.isAdmin()) {
-                    userRepository.save(
-                        User(
-                            id = id,
-                            username = it.username,
-                            password = it.password,
-                            nickname = nickname,
-                            image = image,
-                            level = it.level,
-                            role = it.role,
-                            allowPush = allowPush,
-                            dailyTarget = dailyTarget,
-                            answerRate = it.answerRate,
-                            correctQuizIds = it.correctQuizIds,
-                            incorrectQuizIds = it.incorrectQuizIds,
-                            markedQuizIds = it.markedQuizIds
-                        )
+            userRepository.findByUsername(username)
+                .flatMap { Mono.error<User>(UsernameAlreadyExistException()) }
+                .defaultIfEmpty(
+                    User(
+                        username = username,
+                        password = passwordEncoder.encode(password),
+                        nickname = nickname,
+                        image = image,
+                        level = 1,
+                        role = Role.USER,
+                        allowPush = allowPush,
+                        dailyTarget = dailyTarget,
+                        answerRate = 0.0,
+                        correctQuizIds = hashSetOf(),
+                        incorrectQuizIds = hashSetOf(),
+                        markedQuizIds = hashSetOf(),
                     )
-                } else throw PermissionDeniedException()
-            }?.let { UserResponse(it) } ?: throw UserNotFoundException()
+                )
+                .flatMap { userRepository.save(it) }
+                .map { UserResponse(it) }
         }
 
-    suspend fun changePassword(
+    fun updateUserById(
+        id: String, authentication: DefaultJwtAuthentication, request: UpdateUserByIdRequest
+    ): Mono<UserResponse> =
+        userRepository.findById(id)
+            .switchIfEmpty(Mono.error(UserNotFoundException()))
+            .filter { (authentication.id == it.id) || authentication.isAdmin() }
+            .switchIfEmpty(Mono.error(PermissionDeniedException()))
+            .map { request.run { it.update(nickname, image, allowPush, dailyTarget) } }
+            .flatMap { userRepository.save(it) }
+            .map { UserResponse(it) }
+
+    fun changePassword(
         id: String, authentication: DefaultJwtAuthentication, request: ChangePasswordRequest
-    ) {
+    ): Mono<Void> =
         with(request) {
-            userRepository.findById(id)?.let {
-                if ((authentication.id == it.id) || authentication.isAdmin()) {
-                    if (passwordEncoder.matches(password, it.password)) {
-                        userRepository.save(
-                            User(
-                                id = id,
-                                username = it.username,
-                                password = passwordEncoder.encode(newPassword),
-                                nickname = it.nickname,
-                                image = it.image,
-                                level = it.level,
-                                role = it.role,
-                                allowPush = it.allowPush,
-                                dailyTarget = it.dailyTarget,
-                                answerRate = it.answerRate,
-                                correctQuizIds = it.correctQuizIds,
-                                incorrectQuizIds = it.incorrectQuizIds,
-                                markedQuizIds = it.markedQuizIds
-                            )
-                        )
-                    } else throw PasswordNotMatchException()
-                } else throw PermissionDeniedException()
-            }?.let { UserResponse(it) } ?: throw UserNotFoundException()
+            userRepository.findById(id)
+                .switchIfEmpty(Mono.error(UserNotFoundException()))
+                .filter { (authentication.id == it.id) || authentication.isAdmin() }
+                .switchIfEmpty(Mono.error(PermissionDeniedException()))
+                .filter { passwordEncoder.matches(password, it.password) }
+                .switchIfEmpty(Mono.error(PasswordNotMatchException()))
+                .map { it.updatePassword(passwordEncoder.encode(newPassword)) }
+                .flatMap { userRepository.save(it) }
+                .then()
         }
-    }
 
-    suspend fun deleteUserById(id: String, authentication: DefaultJwtAuthentication) {
-        userRepository.findById(id)?.let {
-            if ((authentication.id == it.id) || authentication.isAdmin()) {
-                userRepository.deleteById(id)
-            } else throw PermissionDeniedException()
-        } ?: throw UserNotFoundException()
-    }
+    fun deleteUserById(id: String, authentication: DefaultJwtAuthentication): Mono<Void> =
+        userRepository.findById(id)
+            .switchIfEmpty(Mono.error(UserNotFoundException()))
+            .filter { (authentication.id == it.id) || authentication.isAdmin() }
+            .switchIfEmpty(Mono.error(PermissionDeniedException()))
+            .flatMap { userRepository.deleteById(id) }
 }
