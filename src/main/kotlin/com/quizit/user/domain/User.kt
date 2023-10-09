@@ -1,5 +1,6 @@
 package com.quizit.user.domain
 
+import com.quizit.user.domain.enum.Provider
 import com.quizit.user.domain.enum.Role
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
@@ -11,14 +12,15 @@ class User(
     @Id
     var id: String? = null,
     val username: String,
-    var password: String,
+    var password: String?,
     var nickname: String,
-    var image: String,
+    var image: String?,
     var level: Int,
     val role: Role,
     var allowPush: Boolean,
     var dailyTarget: Int,
     var answerRate: Double,
+    val provider: Provider?,
     val correctQuizIds: HashSet<String>,
     val incorrectQuizIds: HashSet<String>,
     val markedQuizIds: HashSet<String>,
@@ -53,7 +55,7 @@ class User(
         answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
     }
 
-    fun update(nickname: String, image: String, allowPush: Boolean, dailyTarget: Int): User =
+    fun update(nickname: String, image: String?, allowPush: Boolean, dailyTarget: Int): User =
         also {
             it.nickname = nickname
             it.image = image
