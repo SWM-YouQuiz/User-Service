@@ -6,26 +6,10 @@ spring:
       uri: ${USER_DB_URL}
   kafka:
     bootstrap-servers: ${KAFKA_URL}
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
 jwt:
   secretKey: ${JWT_SECRET}
   accessTokenExpire: ${JWT_ACCESS_EXPIRE}
   refreshTokenExpire: ${JWT_REFRESH_EXPIRE}
-logging:
-  level:
-    web: debug
-    org:
-      springframework:
-        data.mongodb: debug
 url:
   frontend: ${FRONTEND_URL}
   service:
