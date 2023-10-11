@@ -41,7 +41,7 @@ class UserService(
             userRepository.findByUsername(username)
                 .switchIfEmpty(Mono.error(UserNotFoundException()))
                 .filter { it.provider == null }
-                .switchIfEmpty(Mono.error(OAuthNotExistPasswordException()))
+                .switchIfEmpty(Mono.error(OAuthLoginException()))
                 .map { MatchPasswordResponse(passwordEncoder.matches(password, it.password!!)) }
         }
 
@@ -90,7 +90,7 @@ class UserService(
                 .filter { (authentication.id == it.id) || authentication.isAdmin() }
                 .switchIfEmpty(Mono.error(PermissionDeniedException()))
                 .filter { it.provider == null }
-                .switchIfEmpty(Mono.error(OAuthNotExistPasswordException()))
+                .switchIfEmpty(Mono.error(OAuthLoginException()))
                 .filter { passwordEncoder.matches(password, it.password!!) }
                 .switchIfEmpty(Mono.error(PasswordNotMatchException()))
                 .map { it.updatePassword(passwordEncoder.encode(newPassword)) }

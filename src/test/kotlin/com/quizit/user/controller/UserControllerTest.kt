@@ -291,7 +291,7 @@ class UserControllerTest : BaseControllerTest() {
                         .expectBody(ErrorResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "아이디를 통한 패스워드 일치 확인 실패(404 - 1)",
+                                "아이디를 통한 패스워드 일치 확인 실패(404)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("username" paramDesc "아이디"),
@@ -303,20 +303,20 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("소셜 로그인 유저에 대한 아이디가 주어지면") {
-                every { userService.matchPassword(any(), any()) } throws OAuthNotExistPasswordException()
+                every { userService.matchPassword(any(), any()) } throws OAuthLoginException()
 
-                it("상태 코드 404와 에러를 반환한다.") {
+                it("상태 코드 400과 에러를 반환한다.") {
                     webClient
                         .post()
                         .uri("/user/username/{username}/match-password", USERNAME)
                         .bodyValue(createMatchPasswordRequest())
                         .exchange()
                         .expectStatus()
-                        .isNotFound
+                        .isBadRequest
                         .expectBody(ErrorResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "아이디를 통한 패스워드 일치 확인 실패(404 - 2)",
+                                "아이디를 통한 패스워드 일치 확인 실패(400)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("username" paramDesc "아이디"),
@@ -443,7 +443,7 @@ class UserControllerTest : BaseControllerTest() {
                         .expectBody(ErrorResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "패스워드 변경 실패(404 - 1)",
+                                "패스워드 변경 실패(404)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
@@ -480,7 +480,7 @@ class UserControllerTest : BaseControllerTest() {
             }
 
             context("소셜 로그인 유저에 대한 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } throws OAuthNotExistPasswordException()
+                every { userService.changePassword(any(), any(), any()) } throws OAuthLoginException()
                 withMockUser()
 
                 it("상태 코드 404와 에러를 반환한다.") {
@@ -489,11 +489,11 @@ class UserControllerTest : BaseControllerTest() {
                         .bodyValue(createChangePasswordRequest())
                         .exchange()
                         .expectStatus()
-                        .isNotFound
+                        .isBadRequest
                         .expectBody(ErrorResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "패스워드 변경 실패(404 - 2)",
+                                "패스워드 변경 실패(400 - 1)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
@@ -518,7 +518,7 @@ class UserControllerTest : BaseControllerTest() {
                         .expectBody(ErrorResponse::class.java)
                         .consumeWith(
                             WebTestClientRestDocumentationWrapper.document(
-                                "패스워드 변경 실패(400)",
+                                "패스워드 변경 실패(400 - 2)",
                                 Preprocessors.preprocessRequest(Preprocessors.prettyPrint()),
                                 Preprocessors.preprocessResponse(Preprocessors.prettyPrint()),
                                 pathParameters("id" paramDesc "식별자"),
