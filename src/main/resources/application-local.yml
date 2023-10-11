@@ -1,8 +1,6 @@
 server:
   port: 8082
 spring:
-  webflux:
-    base-path: /api/user
   data:
     mongodb:
       uri: mongodb://localhost:27017/user
@@ -18,3 +16,8 @@ url:
     auth: http://localhost:8081
     user: http://localhost:8082
     quiz: http://localhost:8083
+logging:
+  level:
+    web: debug
+    org.springframework:
+      data.mongodb: debug
