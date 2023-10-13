@@ -82,7 +82,7 @@ class UserTest : BehaviorSpec() {
                     .apply { updatePassword(passwordEncoder.encode(password)) }
 
                 Then("해당 유저의 패스워드가 변경된다.") {
-                    updatedUser.password shouldNotBeEqual user.password
+                    updatedUser.password!! shouldNotBeEqual user.password!!
                 }
             }
         }

@@ -9,10 +9,7 @@ import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
 import com.quizit.user.dto.response.MatchPasswordResponse
 import com.quizit.user.dto.response.UserResponse
-import com.quizit.user.exception.PasswordNotMatchException
-import com.quizit.user.exception.PermissionDeniedException
-import com.quizit.user.exception.UserNotFoundException
-import com.quizit.user.exception.UsernameAlreadyExistException
+import com.quizit.user.exception.*
 import com.quizit.user.global.config.isAdmin
 import com.quizit.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -43,7 +40,9 @@ class UserService(
         with(request) {
             userRepository.findByUsername(username)
                 .switchIfEmpty(Mono.error(UserNotFoundException()))
-                .map { MatchPasswordResponse(passwordEncoder.matches(password, it.password)) }
+                .filter { it.provider == null }
+                .switchIfEmpty(Mono.error(OAuthLoginException()))
+                .map { MatchPasswordResponse(passwordEncoder.matches(password, it.password!!)) }
         }
 
     fun createUser(request: CreateUserRequest): Mono<UserResponse> =
@@ -53,7 +52,7 @@ class UserService(
                 .defaultIfEmpty(
                     User(
                         username = username,
-                        password = passwordEncoder.encode(password),
+                        password = password?.run(passwordEncoder::encode),
                         nickname = nickname,
                         image = image,
                         level = 1,
@@ -61,6 +60,7 @@ class UserService(
                         allowPush = allowPush,
                         dailyTarget = dailyTarget,
                         answerRate = 0.0,
+                        provider = provider,
                         correctQuizIds = hashSetOf(),
                         incorrectQuizIds = hashSetOf(),
                         markedQuizIds = hashSetOf(),
@@ -89,7 +89,9 @@ class UserService(
                 .switchIfEmpty(Mono.error(UserNotFoundException()))
                 .filter { (authentication.id == it.id) || authentication.isAdmin() }
                 .switchIfEmpty(Mono.error(PermissionDeniedException()))
-                .filter { passwordEncoder.matches(password, it.password) }
+                .filter { it.provider == null }
+                .switchIfEmpty(Mono.error(OAuthLoginException()))
+                .filter { passwordEncoder.matches(password, it.password!!) }
                 .switchIfEmpty(Mono.error(PasswordNotMatchException()))
                 .map { it.updatePassword(passwordEncoder.encode(newPassword)) }
                 .flatMap { userRepository.save(it) }

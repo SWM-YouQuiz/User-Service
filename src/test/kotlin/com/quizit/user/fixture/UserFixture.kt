@@ -1,6 +1,7 @@
 package com.quizit.user.fixture
 
 import com.quizit.user.domain.User
+import com.quizit.user.domain.enum.Provider
 import com.quizit.user.domain.enum.Role
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
@@ -20,6 +21,7 @@ val ROLE = Role.USER
 const val ALLOW_PUSH = true
 const val DAILY_TARGET = 10
 const val ANSWER_RATE = 50.0
+val PROVIDER = null
 val CORRECT_QUIZ_IDS = hashSetOf("1")
 val INCORRECT_QUIZ_IDS = hashSetOf("1")
 val MARKED_QUIZ_IDS = hashSetOf("1")
@@ -30,9 +32,10 @@ fun createCreateUserRequest(
     username: String = USERNAME,
     password: String = PASSWORD,
     nickname: String = NICKNAME,
-    image: String = IMAGE,
+    image: String? = IMAGE,
     allowPush: Boolean = ALLOW_PUSH,
-    dailyTarget: Int = DAILY_TARGET
+    dailyTarget: Int = DAILY_TARGET,
+    provider: Provider? = PROVIDER
 ): CreateUserRequest =
     CreateUserRequest(
         username = username,
@@ -40,7 +43,8 @@ fun createCreateUserRequest(
         nickname = nickname,
         image = image,
         allowPush = allowPush,
-        dailyTarget = dailyTarget
+        dailyTarget = dailyTarget,
+        provider = provider
     )
 
 fun createMatchPasswordRequest(
@@ -57,12 +61,13 @@ fun createUserResponse(
     id: String = ID,
     username: String = USERNAME,
     nickname: String = NICKNAME,
-    image: String = IMAGE,
+    image: String? = IMAGE,
     level: Int = LEVEL,
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
     dailyTarget: Int = DAILY_TARGET,
     answerRate: Double = ANSWER_RATE,
+    provider: Provider? = PROVIDER,
     createdDate: LocalDateTime = CREATED_DATE,
     correctQuizIds: HashSet<String> = CORRECT_QUIZ_IDS,
     incorrectQuizIds: HashSet<String> = INCORRECT_QUIZ_IDS,
@@ -78,6 +83,7 @@ fun createUserResponse(
         allowPush = allowPush,
         dailyTarget = dailyTarget,
         answerRate = answerRate,
+        provider = provider,
         createdDate = createdDate,
         correctQuizIds = correctQuizIds,
         incorrectQuizIds = incorrectQuizIds,
@@ -109,14 +115,15 @@ fun createChangePasswordRequest(
 fun createUser(
     id: String = ID,
     username: String = USERNAME,
-    password: String = PASSWORD,
+    password: String? = PASSWORD,
     nickname: String = NICKNAME,
-    image: String = IMAGE,
+    image: String? = IMAGE,
     level: Int = LEVEL,
     role: Role = ROLE,
     allowPush: Boolean = ALLOW_PUSH,
     dailyTarget: Int = DAILY_TARGET,
     answerRate: Double = ANSWER_RATE,
+    provider: Provider? = PROVIDER,
     correctQuizIds: HashSet<String> = CORRECT_QUIZ_IDS.toHashSet(),
     incorrectQuizIds: HashSet<String> = INCORRECT_QUIZ_IDS.toHashSet(),
     markedQuizIds: HashSet<String> = MARKED_QUIZ_IDS.toHashSet(),
@@ -124,7 +131,7 @@ fun createUser(
 ): User = User(
     id = id,
     username = username,
-    password = passwordEncoder.encode(password),
+    password = password?.run(passwordEncoder::encode),
     nickname = nickname,
     image = image,
     level = level,
@@ -132,6 +139,7 @@ fun createUser(
     allowPush = allowPush,
     dailyTarget = dailyTarget,
     answerRate = answerRate,
+    provider = provider,
     correctQuizIds = correctQuizIds,
     incorrectQuizIds = incorrectQuizIds,
     markedQuizIds = markedQuizIds,
