@@ -1,6 +1,7 @@
 package com.quizit.user.service
 
 import com.github.jwt.authentication.DefaultJwtAuthentication
+import com.quizit.user.adapter.client.QuizClient
 import com.quizit.user.domain.User
 import com.quizit.user.domain.enum.Role
 import com.quizit.user.dto.request.ChangePasswordRequest
@@ -20,10 +21,18 @@ import reactor.core.publisher.Mono
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val quizClient: QuizClient,
     private val passwordEncoder: PasswordEncoder
 ) {
     fun getRanking(): Flux<UserResponse> =
         userRepository.findAllOrderByCorrectQuizIdsSize()
+            .map { UserResponse(it) }
+
+    fun getRankingByCourseId(courseId: String): Flux<UserResponse> =
+        quizClient.getQuizzesByCourseId(courseId)
+            .map { it.id }
+            .collectList()
+            .flatMapMany { userRepository.findAllOrderByCorrectQuizIdsSizeInQuizIds(it) }
             .map { UserResponse(it) }
 
     fun getUserById(id: String): Mono<UserResponse> =
