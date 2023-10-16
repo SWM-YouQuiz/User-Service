@@ -1,5 +1,6 @@
 package com.quizit.user.service
 
+import com.quizit.user.adapter.client.QuizClient
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.PermissionDeniedException
 import com.quizit.user.exception.UserNotFoundException
@@ -21,8 +22,11 @@ import reactor.test.StepVerifier
 class UserServiceTest : BehaviorSpec() {
     private val userRepository = mockk<UserRepository>()
 
+    private val quizClient = mockk<QuizClient>()
+
     private val userService = UserService(
         userRepository = userRepository,
+        quizClient = quizClient,
         passwordEncoder = passwordEncoder
     )
 
@@ -34,19 +38,26 @@ class UserServiceTest : BehaviorSpec() {
                 .also {
                     every { userRepository.findAll() } returns Flux.just(it)
                     every { userRepository.findAllOrderByCorrectQuizIdsSize() } returns Flux.just(it)
+                    every { userRepository.findAllOrderByCorrectQuizIdsSizeInQuizIds(any()) } returns Flux.just(it)
                     every { userRepository.findById(any<String>()) } returns Mono.just(it)
                     every { userRepository.findByUsername(any()) } returns Mono.just(it)
                     every { userRepository.deleteById(any<String>()) } returns Mono.empty()
+                    every { quizClient.getQuizzesByCourseId(any()) } returns Flux.just(createQuizResponse())
                 }
             val userResponse = UserResponse(user)
 
             When("랭킹 조회를 시도하면") {
-                val result = StepVerifier.create(userService.getRanking())
+                val results = listOf(
+                    StepVerifier.create(userService.getRanking()),
+                    StepVerifier.create(userService.getRankingByCourseId(ID))
+                )
 
                 Then("모든 유저에 대한 랭킹이 조회된다.") {
-                    result.expectSubscription()
-                        .expectNext(userResponse)
-                        .verifyComplete()
+                    results.map {
+                        it.expectSubscription()
+                            .expectNext(userResponse)
+                            .verifyComplete()
+                    }
                 }
             }
 

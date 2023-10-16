@@ -23,6 +23,10 @@ class UserHandler(
         ServerResponse.ok()
             .body(userService.getRanking())
 
+    fun getRankingByCourseId(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(userService.getRankingByCourseId(request.pathVariable("id")))
+
     fun getUserById(request: ServerRequest): Mono<ServerResponse> =
         ServerResponse.ok()
             .body(userService.getUserById(request.pathVariable("id")))

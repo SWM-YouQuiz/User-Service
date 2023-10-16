@@ -14,6 +14,7 @@ class UserRouter {
         router {
             "/user".nest {
                 GET("/ranking", handler::getRanking)
+                GET("/ranking/course/{id}", handler::getRankingByCourseId)
                 GET("/{id}", handler::getUserById)
                 GET("/username/{username}", handler::getUserByUsername)
                 POST("", handler::createUser)

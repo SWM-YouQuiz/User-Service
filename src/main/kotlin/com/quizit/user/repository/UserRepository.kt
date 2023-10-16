@@ -18,4 +18,12 @@ interface UserRepository : ReactiveMongoRepository<User, String> {
         ]
     )
     fun findAllOrderByCorrectQuizIdsSize(): Flux<User>
+
+    @Aggregation(
+        pipeline = [
+            "{ \$addFields: { quizCount: { \$size: { \$setIntersection: [\$correctQuizIds, ?0] } } } }",
+            "{ \$sort: { quizCount: -1 } }"
+        ]
+    )
+    fun findAllOrderByCorrectQuizIdsSizeInQuizIds(quizIds: List<String>): Flux<User>
 }
