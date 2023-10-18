@@ -1,9 +1,7 @@
 package com.quizit.user.adapter.client
 
-import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.quizit.user.dto.response.QuizResponse
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -20,10 +18,7 @@ class QuizClient(
         ReactiveSecurityContextHolder.getContext()
             .flatMapMany {
                 webClient.get()
-                    .uri("$url/api/quiz/quiz/course/{id}", courseId)
-                    .header(
-                        HttpHeaders.AUTHORIZATION, "Bearer ${(it.authentication as DefaultJwtAuthentication).token}"
-                    )
+                    .uri("$url/quiz/course/{id}", courseId)
                     .retrieve()
                     .bodyToFlux<QuizResponse>()
             }
