@@ -30,7 +30,7 @@ class KafkaConfiguration(
 
     @Bean
     fun checkAnswerConsumer(): ReactiveKafkaConsumerTemplate<String, CheckAnswerEvent> =
-        ReactiveKafkaConsumerTemplate(receiverOptions("check-quiz"))
+        ReactiveKafkaConsumerTemplate(receiverOptions("check-answer"))
 }
 
 fun consumerLogging(consumerRecord: ConsumerRecord<String, out Any>) {
