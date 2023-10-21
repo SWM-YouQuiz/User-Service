@@ -1,6 +1,7 @@
 package com.quizit.user.adapter.consumer
 
 import com.quizit.user.dto.event.CheckAnswerEvent
+import com.quizit.user.dto.event.DeleteQuizEvent
 import com.quizit.user.dto.event.MarkQuizEvent
 import com.quizit.user.global.config.consumerLogging
 import com.quizit.user.repository.UserRepository
@@ -10,10 +11,33 @@ import org.springframework.stereotype.Component
 
 @Component
 class UserConsumer(
+    private val deleteQuizConsumer: ReactiveKafkaConsumerTemplate<String, DeleteQuizEvent>,
     private val markQuizConsumer: ReactiveKafkaConsumerTemplate<String, MarkQuizEvent>,
     private val checkAnswerConsumer: ReactiveKafkaConsumerTemplate<String, CheckAnswerEvent>,
     private val userRepository: UserRepository,
 ) {
+    @PostConstruct
+    fun deleteQuiz() {
+        deleteQuizConsumer.receiveAutoAck()
+            .doOnNext { message ->
+                with(message.value()) {
+                    userRepository.findAll()
+                        .map {
+                            it.apply {
+                                correctQuizIds.remove(quizId)
+                                incorrectQuizIds.remove(quizId)
+                            }
+                        }
+                        .let {
+                            userRepository.saveAll(it)
+                        }
+                        .subscribe()
+                }
+            }
+            .doOnNext { consumerLogging(it) }
+            .subscribe()
+    }
+
     @PostConstruct
     fun markQuiz() {
         markQuizConsumer.receiveAutoAck()
