@@ -13,7 +13,7 @@ import com.quizit.user.dto.request.UpdateUserByIdRequest
 import com.quizit.user.dto.response.MatchPasswordResponse
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.*
-import com.quizit.user.global.config.isAdmin
+import com.quizit.user.global.util.isAdmin
 import com.quizit.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service

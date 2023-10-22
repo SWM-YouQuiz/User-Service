@@ -51,10 +51,6 @@ class User(
         }
     }
 
-    private fun changeAnswerRate() {
-        answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
-    }
-
     fun update(nickname: String, image: String?, allowPush: Boolean, dailyTarget: Int): User =
         also {
             it.nickname = nickname
@@ -65,4 +61,8 @@ class User(
 
     fun updatePassword(password: String): User =
         also { it.password = password }
+
+    private fun changeAnswerRate() {
+        answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100
+    }
 }

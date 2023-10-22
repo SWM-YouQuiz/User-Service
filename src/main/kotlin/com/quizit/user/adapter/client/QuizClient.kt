@@ -1,14 +1,14 @@
 package com.quizit.user.adapter.client
 
 import com.quizit.user.dto.response.QuizResponse
+import com.quizit.user.global.annotation.Client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
-import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux
 import reactor.core.publisher.Flux
 
-@Component
+@Client
 class QuizClient(
     private val webClient: WebClient,
     @Value("\${url.service.quiz}")
