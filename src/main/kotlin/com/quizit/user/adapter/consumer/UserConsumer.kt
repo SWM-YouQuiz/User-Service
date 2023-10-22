@@ -9,7 +9,7 @@ import jakarta.annotation.PostConstruct
 import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
 import org.springframework.stereotype.Component
 
-@Component
+@Consumer
 class UserConsumer(
     private val deleteQuizConsumer: ReactiveKafkaConsumerTemplate<String, DeleteQuizEvent>,
     private val markQuizConsumer: ReactiveKafkaConsumerTemplate<String, MarkQuizEvent>,

@@ -4,18 +4,18 @@ import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
 import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
-import com.quizit.user.global.config.authentication
+import com.quizit.user.global.annotation.Handler
+import com.quizit.user.global.util.authentication
 import com.quizit.user.global.util.component1
 import com.quizit.user.global.util.component2
 import com.quizit.user.service.UserService
-import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.bodyToMono
 import reactor.core.publisher.Mono
 
-@Component
+@Handler
 class UserHandler(
     private val userService: UserService
 ) {

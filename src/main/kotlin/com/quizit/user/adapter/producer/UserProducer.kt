@@ -6,7 +6,7 @@ import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
-@Component
+@Producer
 class UserProducer(
     private val kafkaTemplate: ReactiveKafkaProducerTemplate<String, Any>,
 ) {
