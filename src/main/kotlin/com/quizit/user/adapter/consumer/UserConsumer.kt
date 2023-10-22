@@ -3,11 +3,13 @@ package com.quizit.user.adapter.consumer
 import com.quizit.user.dto.event.CheckAnswerEvent
 import com.quizit.user.dto.event.DeleteQuizEvent
 import com.quizit.user.dto.event.MarkQuizEvent
-import com.quizit.user.global.config.consumerLogging
+import com.quizit.user.global.annotation.Consumer
 import com.quizit.user.repository.UserRepository
-import jakarta.annotation.PostConstruct
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.event.EventListener
 import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
-import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 
 @Consumer
 class UserConsumer(
@@ -16,8 +18,8 @@ class UserConsumer(
     private val checkAnswerConsumer: ReactiveKafkaConsumerTemplate<String, CheckAnswerEvent>,
     private val userRepository: UserRepository,
 ) {
-    @PostConstruct
-    fun deleteQuiz() {
+    @EventListener(ApplicationStartedEvent::class)
+    fun deleteQuiz(): Flux<ConsumerRecord<String, DeleteQuizEvent>> =
         deleteQuizConsumer.receiveAutoAck()
             .doOnNext { message ->
                 with(message.value()) {
@@ -34,12 +36,9 @@ class UserConsumer(
                         .subscribe()
                 }
             }
-            .doOnNext { consumerLogging(it) }
-            .subscribe()
-    }
 
-    @PostConstruct
-    fun markQuiz() {
+    @EventListener(ApplicationStartedEvent::class)
+    fun markQuiz(): Flux<ConsumerRecord<String, MarkQuizEvent>> =
         markQuizConsumer.receiveAutoAck()
             .doOnNext { message ->
                 with(message.value()) {
@@ -56,13 +55,11 @@ class UserConsumer(
                         .flatMap { userRepository.save(it) }
                         .subscribe()
                 }
-            }
-            .doOnNext { consumerLogging(it) }
-            .subscribe()
-    }
 
-    @PostConstruct
-    fun checkAnswer() {
+            }
+
+    @EventListener(ApplicationStartedEvent::class)
+    fun checkAnswer(): Flux<ConsumerRecord<String, CheckAnswerEvent>> =
         checkAnswerConsumer.receiveAutoAck()
             .doOnNext { message ->
                 with(message.value()) {
@@ -81,8 +78,6 @@ class UserConsumer(
                         .flatMap { userRepository.save(it) }
                         .subscribe()
                 }
+
             }
-            .doOnNext { consumerLogging(it) }
-            .subscribe()
-    }
 }
