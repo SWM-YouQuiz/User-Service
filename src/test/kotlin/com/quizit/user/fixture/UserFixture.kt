@@ -12,10 +12,10 @@ import com.quizit.user.dto.response.UserResponse
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDateTime
 
-const val USERNAME = "earlgrey02@github.com"
-const val NICKNAME = "earlgrey02"
-const val PASSWORD = "root"
-const val IMAGE = "http://localhost:8080/image.jpg"
+const val USERNAME = "username"
+const val NICKNAME = "nickname"
+const val PASSWORD = "password"
+const val IMAGE = "image"
 const val LEVEL = 2
 val ROLE = Role.USER
 const val ALLOW_PUSH = true
