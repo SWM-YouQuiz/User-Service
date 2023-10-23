@@ -3,6 +3,7 @@ package com.quizit.user.global.config
 import com.quizit.user.dto.event.CheckAnswerEvent
 import com.quizit.user.dto.event.DeleteQuizEvent
 import com.quizit.user.dto.event.MarkQuizEvent
+import com.quizit.user.dto.event.RevokeOAuthEvent
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,6 +30,10 @@ class ProducerConfiguration(
 class ConsumerConfiguration(
     private val properties: KafkaProperties
 ) {
+    @Bean
+    fun revokeOAuthConsumer(): ReactiveKafkaConsumerTemplate<String, RevokeOAuthEvent> =
+        ReactiveKafkaConsumerTemplate(createReceiverOptions("revoke-oauth"))
+
     @Bean
     fun deleteQuizConsumer(): ReactiveKafkaConsumerTemplate<String, DeleteQuizEvent> =
         ReactiveKafkaConsumerTemplate(createReceiverOptions("delete-quiz"))
