@@ -48,14 +48,10 @@ class UserService(
             .switchIfEmpty(Mono.error(UserNotFoundException()))
             .map { UserResponse(it) }
 
-    fun matchPassword(username: String, request: MatchPasswordRequest): Mono<MatchPasswordResponse> =
-        with(request) {
-            userRepository.findByUsername(username)
-                .switchIfEmpty(Mono.error(UserNotFoundException()))
-                .filter { it.provider == null }
-                .switchIfEmpty(Mono.error(OAuthLoginException()))
-                .map { MatchPasswordResponse(passwordEncoder.matches(password, it.password!!)) }
-        }
+    fun getUserByEmailAndProvider(email: String, provider: Provider): Mono<UserResponse> =
+        userRepository.findByEmailAndProvider(email, provider)
+            .switchIfEmpty(Mono.error(UserNotFoundException()))
+            .map { UserResponse(it) }
 
     fun createUser(request: CreateUserRequest): Mono<UserResponse> =
         with(request) {
@@ -92,23 +88,6 @@ class UserService(
             .map { request.run { it.update(nickname, image, allowPush, dailyTarget) } }
             .flatMap { userRepository.save(it) }
             .map { UserResponse(it) }
-
-    fun changePassword(
-        id: String, authentication: DefaultJwtAuthentication, request: ChangePasswordRequest
-    ): Mono<Void> =
-        with(request) {
-            userRepository.findById(id)
-                .switchIfEmpty(Mono.error(UserNotFoundException()))
-                .filter { (authentication.id == it.id) || authentication.isAdmin() }
-                .switchIfEmpty(Mono.error(PermissionDeniedException()))
-                .filter { it.provider == null }
-                .switchIfEmpty(Mono.error(OAuthLoginException()))
-                .filter { passwordEncoder.matches(password, it.password!!) }
-                .switchIfEmpty(Mono.error(PasswordNotMatchException()))
-                .map { it.updatePassword(passwordEncoder.encode(newPassword)) }
-                .flatMap { userRepository.save(it) }
-                .then()
-        }
 
     fun deleteUserById(id: String, authentication: DefaultJwtAuthentication): Mono<Void> =
         userRepository.findById(id)

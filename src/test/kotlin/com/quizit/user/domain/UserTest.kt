@@ -76,15 +76,6 @@ class UserTest : BehaviorSpec() {
                     updatedUser shouldNotBeEqualToComparingFields user
                 }
             }
-
-            When("유저가 패스워드를 변경한다면") {
-                val updatedUser = createUser(password = "updated_password")
-                    .apply { updatePassword(passwordEncoder.encode(password)) }
-
-                Then("해당 유저의 패스워드가 변경된다.") {
-                    updatedUser.password!! shouldNotBeEqual user.password!!
-                }
-            }
         }
     }
 }

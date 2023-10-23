@@ -48,7 +48,8 @@ class UserServiceTest : BehaviorSpec() {
                     every { userRepository.findAllOrderByCorrectQuizIdsSize() } returns listOf(it)
                     every { userRepository.findAllOrderByCorrectQuizIdsSizeInQuizIds(any()) } returns listOf(it)
                     every { userRepository.findById(any<String>()) } returns it
-                    every { userRepository.findByUsername(any()) } returns it
+                    every { userRepository.findByEmail(any()) } returns it
+                    every { userRepository.findByEmailAndProvider(any(), any()) } returns it
                     every { userRepository.deleteById(any<String>()) } returns empty()
                     every { quizClient.getQuizzesByCourseId(any()) } returns listOf(createQuizResponse())
                 }
@@ -93,13 +94,14 @@ class UserServiceTest : BehaviorSpec() {
                 }
             }
 
-            When("아이디를 통해 패스워드 일치 여부를 확인하면") {
-                val result = userService.matchPassword(USERNAME, createMatchPasswordRequest())
+
+            When("이메일과 OAuth 제공자를 통해 유저 조회를 시도하면") {
+                val result = userService.getUserByEmailAndProvider(EMAIL, PROVIDER)
                     .getResult()
 
-                Then("아이디에 맞는 유저의 패스워드 일치 여부가 확인된다.") {
+                Then("이메일과 OAuth 제공자에 맞는 유저가 조회된다.") {
                     result.expectSubscription()
-                        .assertNext { it.isMatched shouldBe true }
+                        .expectNext(userResponse)
                         .verifyComplete()
                 }
             }
@@ -116,22 +118,6 @@ class UserServiceTest : BehaviorSpec() {
                     result.expectSubscription()
                         .assertNext { it.nickname shouldNotBeEqual NICKNAME }
                         .verifyComplete()
-                }
-            }
-
-            When("패스워드를 수정하면") {
-                val changePasswordRequest = createChangePasswordRequest(newPassword = "updated_password")
-                    .also {
-                        every {
-                            userRepository.save(any())
-                        } returns createUser(password = passwordEncoder.encode(it.newPassword))
-                    }
-
-                userService.changePassword(ID, createJwtAuthentication(), changePasswordRequest)
-                    .subscribe()
-
-                Then("패스워드가 변경된다.") {
-                    verify { userRepository.save(any()) }
                 }
             }
 
@@ -245,20 +231,6 @@ class UserServiceTest : BehaviorSpec() {
                 val result = userService.updateUserById(
                     ID, createJwtAuthentication(id = "invalid_id"), createUpdateUserByIdRequest()
                 ).getResult()
-
-                Then("예외가 발생한다.") {
-                    result.expectSubscription()
-                        .expectError<PermissionDeniedException>()
-                        .verify()
-                }
-            }
-
-            When("패스워드를 변경하면") {
-                val result =
-                    userService.changePassword(
-                        ID, createJwtAuthentication(id = "invalid_id"), createChangePasswordRequest()
-                    ).getResult()
-
 
                 Then("예외가 발생한다.") {
                     result.expectSubscription()

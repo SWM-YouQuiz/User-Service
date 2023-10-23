@@ -35,13 +35,14 @@ class UserHandler(
         ServerResponse.ok()
             .body(userService.getUserByUsername(request.pathVariable("username")))
 
-    fun matchPassword(request: ServerRequest): Mono<ServerResponse> =
+    fun getUserByEmailAndProvider(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            bodyToMono<MatchPasswordRequest>()
-                .flatMap {
-                    ServerResponse.ok()
-                        .body(userService.matchPassword(pathVariable("username"), it))
-                }
+            ServerResponse.ok()
+                .body(
+                    userService.getUserByEmailAndProvider(
+                        pathVariable("email"), Provider.valueOf(queryParamNotNull("provider"))
+                    )
+                )
         }
 
     fun createUser(request: ServerRequest): Mono<ServerResponse> =
@@ -59,15 +60,6 @@ class UserHandler(
                 .flatMap { (authentication, request) ->
                     ServerResponse.ok()
                         .body(userService.updateUserById(pathVariable("id"), authentication, request))
-                }
-        }
-
-    fun changePassword(request: ServerRequest): Mono<ServerResponse> =
-        with(request) {
-            Mono.zip(authentication(), bodyToMono<ChangePasswordRequest>())
-                .flatMap { (authentication, request) ->
-                    ServerResponse.ok()
-                        .body(userService.changePassword(pathVariable("id"), authentication, request))
                 }
         }
 

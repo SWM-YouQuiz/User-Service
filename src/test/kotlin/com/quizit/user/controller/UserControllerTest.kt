@@ -32,20 +32,11 @@ class UserControllerTest : ControllerTest() {
         "provider" desc "OAuth Provider"
     )
 
-    private val matchPasswordRequestFields = listOf(
-        "password" desc "패스워드"
-    )
-
     private val updateUserByIdRequestFields = listOf(
         "nickname" desc "닉네임",
         "image" desc "프로필 사진",
         "allowPush" desc "알림 여부",
         "dailyTarget" desc "하루 목표",
-    )
-
-    private val changePasswordRequestFields = listOf(
-        "password" desc "현재 패스워드",
-        "newPassword" desc "새 패스워드"
     )
 
     private val userResponseFields = listOf(
@@ -239,71 +230,6 @@ class UserControllerTest : ControllerTest() {
             }
         }
 
-        describe("matchPassword()는") {
-            context("존재하는 유저에 대한 아이디가 주어지면") {
-                every { userService.matchPassword(any(), any()) } returns createMatchPasswordResponse()
-
-                it("상태 코드 200과 matchPasswordResponse를 반환한다.") {
-                    webClient
-                        .post()
-                        .uri("/user/username/{username}/match-password", USERNAME)
-                        .bodyValue(createMatchPasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody<MatchPasswordResponse>()
-                        .document(
-                            "아이디를 통한 패스워드 일치 확인 성공(200)",
-                            pathParameters("username" paramDesc "아이디"),
-                            requestFields(matchPasswordRequestFields),
-                            responseFields(matchPasswordResponseFields)
-                        )
-                }
-            }
-
-            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                every { userService.matchPassword(any(), any()) } throws UserNotFoundException()
-
-                it("상태 코드 404와 에러를 반환한다.") {
-                    webClient
-                        .post()
-                        .uri("/user/username/{username}/match-password", USERNAME)
-                        .bodyValue(createMatchPasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isNotFound
-                        .expectBody<ErrorResponse>()
-                        .document(
-                            "아이디를 통한 패스워드 일치 확인 실패(404)",
-                            pathParameters("username" paramDesc "아이디"),
-                            requestFields(matchPasswordRequestFields),
-                            responseFields(errorResponseFields)
-                        )
-                }
-            }
-
-            context("소셜 로그인 유저에 대한 아이디가 주어지면") {
-                every { userService.matchPassword(any(), any()) } throws OAuthLoginException()
-
-                it("상태 코드 400과 에러를 반환한다.") {
-                    webClient
-                        .post()
-                        .uri("/user/username/{username}/match-password", USERNAME)
-                        .bodyValue(createMatchPasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isBadRequest
-                        .expectBody<ErrorResponse>()
-                        .document(
-                            "아이디를 통한 패스워드 일치 확인 실패(400)",
-                            pathParameters("username" paramDesc "아이디"),
-                            requestFields(matchPasswordRequestFields),
-                            responseFields(errorResponseFields)
-                        )
-                }
-            }
-        }
-
         describe("updateUserById()는") {
             context("존재하는 유저에 대한 식별자가 주어지면") {
                 every { userService.updateUserById(any(), any(), any()) } returns createUserResponse()
@@ -362,112 +288,6 @@ class UserControllerTest : ControllerTest() {
                             "유저 수정 실패(403)",
                             pathParameters("id" paramDesc "식별자"),
                             requestFields(updateUserByIdRequestFields),
-                            responseFields(errorResponseFields)
-                        )
-                }
-            }
-        }
-
-        describe("changePassword()는") {
-            context("존재하는 유저에 대한 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } returns empty()
-                withMockUser()
-
-                it("상태 코드 200을 반환한다.") {
-                    webClient.put()
-                        .uri("/user/{id}/password", ID)
-                        .bodyValue(createChangePasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isOk
-                        .expectBody()
-                        .document(
-                            "패스워드 변경 성공(200)",
-                            pathParameters("id" paramDesc "식별자"),
-                            requestFields(changePasswordRequestFields),
-                        )
-                }
-            }
-
-            context("존재하지 않는 유저에 대한 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } throws UserNotFoundException()
-                withMockUser()
-
-                it("상태 코드 404와 에러를 반환한다.") {
-                    webClient.put()
-                        .uri("/user/{id}/password", ID)
-                        .bodyValue(createChangePasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isNotFound
-                        .expectBody<ErrorResponse>()
-                        .document(
-                            "패스워드 변경 실패(404)",
-                            pathParameters("id" paramDesc "식별자"),
-                            requestFields(changePasswordRequestFields),
-                            responseFields(errorResponseFields)
-                        )
-                }
-            }
-
-            context("본인이 아닌 다른 유저의 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } throws PermissionDeniedException()
-                withMockUser()
-
-                it("상태 코드 403과 에러를 반환한다.") {
-                    webClient.put()
-                        .uri("/user/{id}/password", ID)
-                        .bodyValue(createChangePasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isForbidden
-                        .expectBody<ErrorResponse>()
-                        .document(
-                            "패스워드 변경 실패(403)",
-                            pathParameters("id" paramDesc "식별자"),
-                            requestFields(changePasswordRequestFields),
-                            responseFields(errorResponseFields)
-                        )
-                }
-            }
-
-            context("소셜 로그인 유저에 대한 식별자가 주어지면") {
-                every { userService.changePassword(any(), any(), any()) } throws OAuthLoginException()
-                withMockUser()
-
-                it("상태 코드 404와 에러를 반환한다.") {
-                    webClient.put()
-                        .uri("/user/{id}/password", ID)
-                        .bodyValue(createChangePasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isBadRequest
-                        .expectBody<ErrorResponse>()
-                        .document(
-                            "패스워드 변경 실패(400 - 1)",
-                            pathParameters("id" paramDesc "식별자"),
-                            requestFields(changePasswordRequestFields),
-                            responseFields(errorResponseFields)
-                        )
-                }
-            }
-
-            context("현재 패스워드가 일치하지 않으면") {
-                every { userService.changePassword(any(), any(), any()) } throws PasswordNotMatchException()
-                withMockUser()
-
-                it("상태 코드 400과 에러를 반환한다.") {
-                    webClient.put()
-                        .uri("/user/{id}/password", ID)
-                        .bodyValue(createChangePasswordRequest())
-                        .exchange()
-                        .expectStatus()
-                        .isBadRequest
-                        .expectBody<ErrorResponse>()
-                        .document(
-                            "패스워드 변경 실패(400 - 2)",
-                            pathParameters("id" paramDesc "식별자"),
-                            requestFields(changePasswordRequestFields),
                             responseFields(errorResponseFields)
                         )
                 }

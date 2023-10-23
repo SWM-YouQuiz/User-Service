@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface UserRepository : ReactiveMongoRepository<User, String> {
-    fun findByUsername(username: String): Mono<User>
+    fun findByEmailAndProvider(email: String, provider: Provider): Mono<User>
 
     @Aggregation(
         pipeline = [

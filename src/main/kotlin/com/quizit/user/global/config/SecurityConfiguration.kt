@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
@@ -18,9 +16,6 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 @EnableWebFluxSecurity
 @Configuration
 class SecurityConfiguration {
-    @Bean
-    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-
     @Bean
     fun filterChain(
         http: ServerHttpSecurity, jwtAuthenticationFilter: JwtAuthenticationFilter
@@ -39,8 +34,7 @@ class SecurityConfiguration {
                     .pathMatchers(
                         "/actuator/health/**",
                         "/user",
-                        "/user/username/{username}",
-                        "/user/username/{username}/match-password"
+                        "/user/email/{email}",
                     )
                     .permitAll()
                     .anyExchange()

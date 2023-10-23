@@ -19,9 +19,7 @@ class UserRouter {
                 GET("/{id}", handler::getUserById)
                 GET("/username/{username}", handler::getUserByUsername)
                 POST("", handler::createUser)
-                POST("/username/{username}/match-password", handler::matchPassword)
                 PUT("/{id}", handler::updateUserById)
-                PUT("/{id}/password", handler::changePassword)
                 DELETE("/{id}", handler::deleteUserById)
             }
         }
