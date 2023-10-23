@@ -1,6 +1,7 @@
 package com.quizit.user.repository
 
 import com.quizit.user.domain.User
+import com.quizit.user.domain.enum.Provider
 import org.springframework.data.mongodb.repository.Aggregation
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Repository
@@ -9,7 +10,9 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface UserRepository : ReactiveMongoRepository<User, String> {
-    fun findByUsername(username: String): Mono<User>
+    fun findByEmail(email: String): Mono<User>
+
+    fun findByEmailAndProvider(email: String, provider: Provider): Mono<User>
 
     @Aggregation(
         pipeline = [

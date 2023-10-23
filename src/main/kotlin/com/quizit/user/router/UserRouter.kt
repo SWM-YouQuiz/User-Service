@@ -1,9 +1,9 @@
 package com.quizit.user.router
 
 import com.quizit.user.global.annotation.Router
+import com.quizit.user.global.util.queryParams
 import com.quizit.user.handler.UserHandler
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
@@ -16,12 +16,12 @@ class UserRouter {
             "/user".nest {
                 GET("/ranking", handler::getRanking)
                 GET("/ranking/course/{id}", handler::getRankingByCourseId)
+                GET("/authentication", handler::getUserByAuthentication)
                 GET("/{id}", handler::getUserById)
-                GET("/username/{username}", handler::getUserByUsername)
+                GET("/email/{email}", queryParams("provider"), handler::getUserByEmailAndProvider)
+                GET("/email/{email}", handler::getUserByEmail)
                 POST("", handler::createUser)
-                POST("/username/{username}/match-password", handler::matchPassword)
                 PUT("/{id}", handler::updateUserById)
-                PUT("/{id}/password", handler::changePassword)
                 DELETE("/{id}", handler::deleteUserById)
             }
         }

@@ -1,13 +1,13 @@
 package com.quizit.user.handler
 
-import com.quizit.user.dto.request.ChangePasswordRequest
+import com.quizit.user.domain.enum.Provider
 import com.quizit.user.dto.request.CreateUserRequest
-import com.quizit.user.dto.request.MatchPasswordRequest
 import com.quizit.user.dto.request.UpdateUserByIdRequest
 import com.quizit.user.global.annotation.Handler
 import com.quizit.user.global.util.authentication
 import com.quizit.user.global.util.component1
 import com.quizit.user.global.util.component2
+import com.quizit.user.global.util.queryParamNotNull
 import com.quizit.user.service.UserService
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -31,17 +31,25 @@ class UserHandler(
         ServerResponse.ok()
             .body(userService.getUserById(request.pathVariable("id")))
 
-    fun getUserByUsername(request: ServerRequest): Mono<ServerResponse> =
-        ServerResponse.ok()
-            .body(userService.getUserByUsername(request.pathVariable("username")))
+    fun getUserByAuthentication(request: ServerRequest): Mono<ServerResponse> =
+        request.authentication()
+            .flatMap {
+                ServerResponse.ok()
+                    .body(userService.getUserByAuthentication(it))
+            }
 
-    fun matchPassword(request: ServerRequest): Mono<ServerResponse> =
+    fun getUserByEmail(request: ServerRequest): Mono<ServerResponse> =
+        ServerResponse.ok()
+            .body(userService.getUserByEmail(request.pathVariable("email")))
+
+    fun getUserByEmailAndProvider(request: ServerRequest): Mono<ServerResponse> =
         with(request) {
-            bodyToMono<MatchPasswordRequest>()
-                .flatMap {
-                    ServerResponse.ok()
-                        .body(userService.matchPassword(pathVariable("username"), it))
-                }
+            ServerResponse.ok()
+                .body(
+                    userService.getUserByEmailAndProvider(
+                        pathVariable("email"), Provider.valueOf(queryParamNotNull("provider"))
+                    )
+                )
         }
 
     fun createUser(request: ServerRequest): Mono<ServerResponse> =
@@ -59,15 +67,6 @@ class UserHandler(
                 .flatMap { (authentication, request) ->
                     ServerResponse.ok()
                         .body(userService.updateUserById(pathVariable("id"), authentication, request))
-                }
-        }
-
-    fun changePassword(request: ServerRequest): Mono<ServerResponse> =
-        with(request) {
-            Mono.zip(authentication(), bodyToMono<ChangePasswordRequest>())
-                .flatMap { (authentication, request) ->
-                    ServerResponse.ok()
-                        .body(userService.changePassword(pathVariable("id"), authentication, request))
                 }
         }
 
