@@ -12,7 +12,7 @@ import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
 import reactor.core.publisher.Flux
 
 @Consumer
-class UserConsumer(
+class QuizConsumer(
     private val deleteQuizConsumer: ReactiveKafkaConsumerTemplate<String, DeleteQuizEvent>,
     private val markQuizConsumer: ReactiveKafkaConsumerTemplate<String, MarkQuizEvent>,
     private val checkAnswerConsumer: ReactiveKafkaConsumerTemplate<String, CheckAnswerEvent>,
