@@ -2,8 +2,10 @@ package com.quizit.user.service
 
 import com.github.jwt.authentication.DefaultJwtAuthentication
 import com.quizit.user.adapter.client.QuizClient
+import com.quizit.user.adapter.producer.UserProducer
 import com.quizit.user.domain.User
 import com.quizit.user.domain.enum.Role
+import com.quizit.user.dto.event.DeleteUserEvent
 import com.quizit.user.dto.request.ChangePasswordRequest
 import com.quizit.user.dto.request.CreateUserRequest
 import com.quizit.user.dto.request.MatchPasswordRequest
@@ -22,6 +24,7 @@ import reactor.core.publisher.Mono
 class UserService(
     private val userRepository: UserRepository,
     private val quizClient: QuizClient,
+    private val userProducer: UserProducer,
     private val passwordEncoder: PasswordEncoder
 ) {
     fun getRanking(): Flux<UserResponse> =
@@ -113,4 +116,5 @@ class UserService(
             .filter { (authentication.id == it.id) || authentication.isAdmin() }
             .switchIfEmpty(Mono.error(PermissionDeniedException()))
             .flatMap { userRepository.deleteById(id) }
+            .then(Mono.defer { userProducer.deleteUser(DeleteUserEvent(id)) })
 }

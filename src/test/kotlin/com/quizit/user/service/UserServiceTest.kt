@@ -1,6 +1,7 @@
 package com.quizit.user.service
 
 import com.quizit.user.adapter.client.QuizClient
+import com.quizit.user.adapter.producer.UserProducer
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.PermissionDeniedException
 import com.quizit.user.exception.UserNotFoundException
@@ -24,9 +25,15 @@ class UserServiceTest : BehaviorSpec() {
 
     private val quizClient = mockk<QuizClient>()
 
+    private val userProducer = mockk<UserProducer>()
+        .apply {
+            every { deleteUser(any()) } returns Mono.empty()
+        }
+
     private val userService = UserService(
         userRepository = userRepository,
         quizClient = quizClient,
+        userProducer = userProducer,
         passwordEncoder = passwordEncoder
     )
 
