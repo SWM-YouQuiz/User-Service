@@ -1,9 +1,11 @@
 package com.quizit.user.controller
 
 import com.ninjasquad.springmockk.MockkBean
-import com.quizit.user.dto.response.MatchPasswordResponse
+import com.quizit.user.domain.enum.Provider
 import com.quizit.user.dto.response.UserResponse
-import com.quizit.user.exception.*
+import com.quizit.user.exception.PermissionDeniedException
+import com.quizit.user.exception.UserAlreadyExistException
+import com.quizit.user.exception.UserNotFoundException
 import com.quizit.user.fixture.*
 import com.quizit.user.global.dto.ErrorResponse
 import com.quizit.user.handler.UserHandler
@@ -15,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.reactive.server.expectBody
 
 @WebFluxTest(UserRouter::class, UserHandler::class)
@@ -23,9 +26,8 @@ class UserControllerTest : ControllerTest() {
     private lateinit var userService: UserService
 
     private val createUserRequestFields = listOf(
-        "username" desc "아이디",
-        "password" desc "패스워드",
-        "nickname" desc "닉네임",
+        "email" desc "이메일",
+        "username" desc "이름",
         "image" desc "프로필 사진",
         "allowPush" desc "알림 여부",
         "dailyTarget" desc "하루 목표",
@@ -33,7 +35,7 @@ class UserControllerTest : ControllerTest() {
     )
 
     private val updateUserByIdRequestFields = listOf(
-        "nickname" desc "닉네임",
+        "username" desc "이름",
         "image" desc "프로필 사진",
         "allowPush" desc "알림 여부",
         "dailyTarget" desc "하루 목표",
@@ -41,23 +43,19 @@ class UserControllerTest : ControllerTest() {
 
     private val userResponseFields = listOf(
         "id" desc "식별자",
-        "username" desc "아이디",
-        "nickname" desc "닉네임",
+        "email" desc "이메일",
+        "username" desc "이름",
         "image" desc "프로필 사진",
         "level" desc "레벨",
         "role" desc "권한",
         "allowPush" desc "알림 여부",
         "dailyTarget" desc "하루 목표",
         "answerRate" desc "정답률",
-        "provider" desc "OAuth Provider",
+        "provider" desc "OAuth 제공자",
         "correctQuizIds" desc "맞은 퀴즈 리스트",
         "incorrectQuizIds" desc "틀린 퀴즈 리스트",
         "markedQuizIds" desc "저장한 퀴즈 리스트",
         "createdDate" desc "가입 날짜"
-    )
-
-    private val matchPasswordResponseFields = listOf(
-        "isMatched" desc "패스워드 일치 여부",
     )
 
     init {
@@ -145,41 +143,103 @@ class UserControllerTest : ControllerTest() {
             }
         }
 
-        describe("getUserByUsername()은") {
-            context("존재하는 유저에 대한 아이디가 주어지면") {
-                every { userService.getUserByUsername(any()) } returns createUserResponse()
+        describe("getUserByAuthentication()는") {
+            context("현재 로그인한 유저에 대한 인증 객체가 주어지면") {
+                every { userService.getUserByAuthentication(any()) } returns createUserResponse()
+                withMockUser()
 
                 it("상태 코드 200과 userResponse를 반환한다.") {
                     webClient
                         .get()
-                        .uri("/user/username/{username}", USERNAME)
+                        .uri("/user/authentication")
                         .exchange()
                         .expectStatus()
                         .isOk
                         .expectBody<UserResponse>()
                         .document(
-                            "아이디를 통한 유저 단일 조회 성공(200)",
-                            pathParameters("username" paramDesc "아이디"),
+                            "인증 객체를 통한 유저 단일 조회 성공(200)",
+                            responseFields(userResponseFields)
+                        )
+                }
+            }
+        }
+
+        describe("getUserByEmail()은") {
+            context("존재하는 유저에 대한 이메일이 주어지면") {
+                every { userService.getUserByEmail(any()) } returns createUserResponse()
+
+                it("상태 코드 200과 userResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/email/{email}", EMAIL)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody<UserResponse>()
+                        .document(
+                            "이메일을 통한 유저 단일 조회 성공(200)",
+                            pathParameters("email" paramDesc "이메일"),
                             responseFields(userResponseFields)
                         )
                 }
             }
 
-            context("존재하지 않는 유저에 대한 아이디가 주어지면") {
-                every { userService.getUserByUsername(any()) } throws UserNotFoundException()
-                withMockUser()
+            context("존재하지 않는 유저에 대한 이메일이 주어지면") {
+                every { userService.getUserByEmail(any()) } throws UserNotFoundException()
 
                 it("상태 코드 404와 에러를 반환한다.") {
                     webClient
                         .get()
-                        .uri("/user/username/{username}", USERNAME)
+                        .uri("/user/email/{email}", EMAIL)
                         .exchange()
                         .expectStatus()
                         .isNotFound
                         .expectBody<ErrorResponse>()
                         .document(
-                            "아이디를 통한 유저 단일 조회 실패(404)",
-                            pathParameters("username" paramDesc "아이디"),
+                            "이메일을 통한 유저 단일 조회 실패(404)",
+                            pathParameters("email" paramDesc "이메일"),
+                            responseFields(errorResponseFields)
+                        )
+                }
+            }
+        }
+
+        describe("getUserByEmailAndProvider()은") {
+            context("존재하는 유저에 대한 이메일 및 OAuth 제공자가 주어지면") {
+                every { userService.getUserByEmailAndProvider(any(), any()) } returns createUserResponse()
+
+                it("상태 코드 200과 userResponse를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/email/{email}?provider={provider}", EMAIL, Provider.GOOGLE)
+                        .exchange()
+                        .expectStatus()
+                        .isOk
+                        .expectBody<UserResponse>()
+                        .document(
+                            "이메일과 OAuth 제공자를 통한 유저 단일 조회 성공(200)",
+                            pathParameters("email" paramDesc "이메일"),
+                            queryParameters("provider" paramDesc "OAuth 제공자"),
+                            responseFields(userResponseFields)
+                        )
+                }
+            }
+
+            context("존재하지 않는 유저에 대한 이메일 및 OAuth 제공자가 주어지면") {
+                every { userService.getUserByEmailAndProvider(any(), any()) } throws UserNotFoundException()
+
+                it("상태 코드 404와 에러를 반환한다.") {
+                    webClient
+                        .get()
+                        .uri("/user/email/{email}?provider={provider}", EMAIL, Provider.GOOGLE)
+                        .exchange()
+                        .expectStatus()
+                        .isNotFound
+                        .expectBody<ErrorResponse>()
+                        .document(
+                            "이메일과 OAuth 제공자를 통한 유저 단일 조회 실패(404)",
+                            pathParameters("email" paramDesc "이메일"),
+                            queryParameters("provider" paramDesc "OAuth 제공자"),
                             responseFields(errorResponseFields)
                         )
                 }
@@ -187,7 +247,7 @@ class UserControllerTest : ControllerTest() {
         }
 
         describe("createUser()는") {
-            context("존재하지 않는 아이디가 주어지면") {
+            context("존재하지 않는 이메일이 주어지면") {
                 every { userService.createUser(any()) } returns createUserResponse()
                 withMockUser()
 
@@ -208,8 +268,8 @@ class UserControllerTest : ControllerTest() {
                 }
             }
 
-            context("이미 존재하는 아이디가 주어지면") {
-                every { userService.createUser(any()) } throws UsernameAlreadyExistException()
+            context("이미 존재하는 이메일이 주어지면") {
+                every { userService.createUser(any()) } throws UserAlreadyExistException()
                 withMockUser()
 
                 it("상태 코드 409와 에러를 반환한다.") {

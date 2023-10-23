@@ -4,8 +4,8 @@ import com.quizit.user.adapter.client.QuizClient
 import com.quizit.user.adapter.producer.UserProducer
 import com.quizit.user.dto.response.UserResponse
 import com.quizit.user.exception.PermissionDeniedException
+import com.quizit.user.exception.UserAlreadyExistException
 import com.quizit.user.exception.UserNotFoundException
-import com.quizit.user.exception.UsernameAlreadyExistException
 import com.quizit.user.fixture.*
 import com.quizit.user.repository.UserRepository
 import com.quizit.user.util.empty
@@ -14,11 +14,9 @@ import com.quizit.user.util.returns
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.equals.shouldNotBeEqual
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import reactor.core.publisher.Mono
 import reactor.kotlin.test.expectError
 
 class UserServiceTest : BehaviorSpec() {
@@ -28,14 +26,13 @@ class UserServiceTest : BehaviorSpec() {
 
     private val userProducer = mockk<UserProducer>()
         .apply {
-            every { deleteUser(any()) } returns Mono.empty()
+            every { deleteUser(any()) } returns empty()
         }
 
     private val userService = UserService(
         userRepository = userRepository,
         quizClient = quizClient,
         userProducer = userProducer,
-        passwordEncoder = passwordEncoder
     )
 
     override fun isolationMode(): IsolationMode = IsolationMode.InstancePerTest
@@ -83,11 +80,22 @@ class UserServiceTest : BehaviorSpec() {
                 }
             }
 
-            When("아이디를 통해 유저 조회를 시도하면") {
-                val result = userService.getUserByUsername(USERNAME)
+            When("인증 객체를 통해 유저 조회를 시도하면") {
+                val result = userService.getUserByAuthentication(createJwtAuthentication())
                     .getResult()
 
-                Then("아이디에 맞는 유저가 조회된다.") {
+                Then("인증 객체의 식별자에 맞는 유저가 조회된다.") {
+                    result.expectSubscription()
+                        .expectNext(userResponse)
+                        .verifyComplete()
+                }
+            }
+
+            When("이메일을 통해 유저 조회를 시도하면") {
+                val result = userService.getUserByEmail(EMAIL)
+                    .getResult()
+
+                Then("이메일에 맞는 유저가 조회된다.") {
                     result.expectSubscription()
                         .expectNext(userResponse)
                         .verifyComplete()
@@ -107,16 +115,16 @@ class UserServiceTest : BehaviorSpec() {
             }
 
             When("프로필을 수정하면") {
-                val updateUserByIdRequest = createUpdateUserByIdRequest(nickname = "updated_nickname")
+                val updateUserByIdRequest = createUpdateUserByIdRequest(username = "updated_username")
                     .also {
-                        every { userRepository.save(any()) } returns createUser(nickname = it.nickname)
+                        every { userRepository.save(any()) } returns createUser(username = it.username)
                     }
                 val result = userService.updateUserById(ID, createJwtAuthentication(), updateUserByIdRequest)
                     .getResult()
 
                 Then("유저 정보가 변경된다.") {
                     result.expectSubscription()
-                        .assertNext { it.nickname shouldNotBeEqual NICKNAME }
+                        .assertNext { it.username shouldNotBeEqual USERNAME }
                         .verifyComplete()
                 }
             }
@@ -135,7 +143,7 @@ class UserServiceTest : BehaviorSpec() {
             createUser()
                 .apply {
                     every { userRepository.findById(any<String>()) } returns empty()
-                    every { userRepository.findByUsername(any()) } returns empty()
+                    every { userRepository.findByEmail(any()) } returns empty()
                 }
 
             When("식별자를 통해 유저 조회를 시도하면") {
@@ -149,19 +157,8 @@ class UserServiceTest : BehaviorSpec() {
                 }
             }
 
-            When("아이디를 통해 유저 조회를 시도하면") {
-                val result = userService.getUserByUsername(USERNAME)
-                    .getResult()
-
-                Then("예외가 발생한다.") {
-                    result.expectSubscription()
-                        .expectError<UserNotFoundException>()
-                        .verify()
-                }
-            }
-
-            When("아이디를 통해 패스워드 일치 여부를 확인하면") {
-                val result = userService.matchPassword(USERNAME, createMatchPasswordRequest())
+            When("이메일을 통해 유저 조회를 시도하면") {
+                val result = userService.getUserByEmail(EMAIL)
                     .getResult()
 
                 Then("예외가 발생한다.") {
@@ -183,11 +180,11 @@ class UserServiceTest : BehaviorSpec() {
             }
         }
 
-        Given("해당 아이디를 가진 유저가 없는 경우") {
+        Given("해당 이메일을 가진 유저가 없는 경우") {
             val user = createUser()
                 .also {
                     every { userRepository.save(any()) } returns it
-                    every { userRepository.findByUsername(any()) } returns empty()
+                    every { userRepository.findByEmailAndProvider(any(), any()) } returns empty()
                 }
             val userResponse = UserResponse(user)
 
@@ -203,10 +200,10 @@ class UserServiceTest : BehaviorSpec() {
             }
         }
 
-        Given("해당 아이디를 가진 유저가 이미 존재하는 경우") {
+        Given("해당 이메일을 가진 유저가 이미 존재하는 경우") {
             createUser()
                 .also {
-                    every { userRepository.findByUsername(any()) } returns it
+                    every { userRepository.findByEmailAndProvider(any(), any()) } returns it
                 }
 
             When("유저가 회원가입을 시도하면") {
@@ -215,7 +212,7 @@ class UserServiceTest : BehaviorSpec() {
 
                 Then("예외가 발생한다.") {
                     result.expectSubscription()
-                        .expectError<UsernameAlreadyExistException>()
+                        .expectError<UserAlreadyExistException>()
                         .verify()
                 }
             }

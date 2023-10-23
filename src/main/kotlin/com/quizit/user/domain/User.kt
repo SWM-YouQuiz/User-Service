@@ -8,19 +8,18 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
 @Document
-class User(
+data class User(
     @Id
     var id: String? = null,
-    val username: String,
-    var password: String?,
-    var nickname: String,
-    var image: String?,
+    val email: String,
+    var username: String,
+    var image: String,
     var level: Int,
     val role: Role,
     var allowPush: Boolean,
     var dailyTarget: Int,
     var answerRate: Double,
-    val provider: Provider?,
+    val provider: Provider,
     val correctQuizIds: HashSet<String>,
     val incorrectQuizIds: HashSet<String>,
     val markedQuizIds: HashSet<String>,
@@ -51,16 +50,13 @@ class User(
         }
     }
 
-    fun update(nickname: String, image: String?, allowPush: Boolean, dailyTarget: Int): User =
+    fun update(username: String, image: String, allowPush: Boolean, dailyTarget: Int): User =
         also {
-            it.nickname = nickname
+            it.username = username
             it.image = image
             it.allowPush = allowPush
             it.dailyTarget = dailyTarget
         }
-
-    fun updatePassword(password: String): User =
-        also { it.password = password }
 
     private fun changeAnswerRate() {
         answerRate = (correctQuizIds.size.toDouble() / (correctQuizIds.size + incorrectQuizIds.size).toDouble()) * 100

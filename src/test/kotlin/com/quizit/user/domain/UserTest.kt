@@ -5,7 +5,6 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
-import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeLessThan
 
@@ -13,8 +12,7 @@ class UserTest : BehaviorSpec() {
     init {
         Given("유저가 존재하는 경우") {
             val user = createUser().apply {
-                nickname = NICKNAME
-                password = passwordEncoder.encode(PASSWORD)
+                username = USERNAME
                 level = LEVEL
                 allowPush = ALLOW_PUSH
                 dailyTarget = DAILY_TARGET
@@ -69,8 +67,8 @@ class UserTest : BehaviorSpec() {
             }
 
             When("유저가 프로필을 수정한다면") {
-                val updatedUser = createUser(nickname = "updated_nickname")
-                    .apply { update(nickname, image, allowPush, dailyTarget) }
+                val updatedUser = createUser(username = "updated_nickname")
+                    .apply { update(username, image, allowPush, dailyTarget) }
 
                 Then("해당 유저의 정보가 수정된다.") {
                     updatedUser shouldNotBeEqualToComparingFields user
