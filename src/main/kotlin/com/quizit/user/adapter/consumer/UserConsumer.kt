@@ -55,7 +55,6 @@ class UserConsumer(
                         .flatMap { userRepository.save(it) }
                         .subscribe()
                 }
-
             }
 
     @EventListener(ApplicationStartedEvent::class)
@@ -78,6 +77,5 @@ class UserConsumer(
                         .flatMap { userRepository.save(it) }
                         .subscribe()
                 }
-
             }
 }
