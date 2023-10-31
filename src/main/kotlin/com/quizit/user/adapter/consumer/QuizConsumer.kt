@@ -24,15 +24,11 @@ class QuizConsumer(
             .doOnNext { message ->
                 with(message.value()) {
                     userRepository.findAll()
-                        .map {
-                            it.apply {
-                                correctQuizIds.remove(quizId)
-                                incorrectQuizIds.remove(quizId)
-                            }
+                        .doOnNext {
+                            it.correctQuizIds.remove(quizId)
+                            it.incorrectQuizIds.remove(quizId)
                         }
-                        .let {
-                            userRepository.saveAll(it)
-                        }
+                        .let { userRepository.saveAll(it) }
                         .subscribe()
                 }
             }
@@ -43,19 +39,16 @@ class QuizConsumer(
             .doOnNext { message ->
                 with(message.value()) {
                     userRepository.findById(userId)
-                        .map {
-                            it.apply {
-                                if (isMarked) {
-                                    markQuiz(quizId)
-                                } else {
-                                    unmarkQuiz(quizId)
-                                }
+                        .doOnNext {
+                            if (isMarked) {
+                                it.markQuiz(quizId)
+                            } else {
+                                it.unmarkQuiz(quizId)
                             }
                         }
                         .flatMap { userRepository.save(it) }
                         .subscribe()
                 }
-
             }
 
     @EventListener(ApplicationStartedEvent::class)
@@ -65,19 +58,16 @@ class QuizConsumer(
                 with(message.value()) {
                     userRepository.findById(userId)
                         .filter { (quizId !in it.correctQuizIds) && (quizId !in it.incorrectQuizIds) }
-                        .map {
-                            it.apply {
-                                if (isAnswer) {
-                                    correctAnswer(quizId)
-                                    checkLevel()
-                                } else {
-                                    incorrectAnswer(quizId)
-                                }
+                        .doOnNext {
+                            if (isAnswer) {
+                                it.correctAnswer(quizId)
+                                it.checkLevel()
+                            } else {
+                                it.incorrectAnswer(quizId)
                             }
                         }
                         .flatMap { userRepository.save(it) }
                         .subscribe()
                 }
-
             }
 }
