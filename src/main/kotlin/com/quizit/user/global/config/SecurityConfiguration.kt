@@ -32,7 +32,7 @@ class SecurityConfiguration {
                 it.pathMatchers("/user/admin/**")
                     .hasAuthority(Role.ADMIN.name)
                     .pathMatchers(
-                        "/actuator/health/**",
+                        "/actuator/**",
                         "/user",
                         "/user/email/{email}",
                     )
