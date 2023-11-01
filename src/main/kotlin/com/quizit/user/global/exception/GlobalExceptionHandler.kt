@@ -2,7 +2,7 @@ package com.quizit.user.global.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.quizit.user.global.dto.ErrorResponse
-import com.quizit.user.global.util.logger
+import com.quizit.user.global.util.getLogger
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatusCode
@@ -15,6 +15,8 @@ import reactor.kotlin.core.publisher.toMono
 class GlobalExceptionHandler(
     private val objectMapper: ObjectMapper
 ) : ErrorWebExceptionHandler {
+    private val logger = getLogger()
+
     override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> =
         with(exchange.response) {
             val errorResponse = if (ex is ServerException) {
