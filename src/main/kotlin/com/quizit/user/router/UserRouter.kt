@@ -1,6 +1,7 @@
 package com.quizit.user.router
 
 import com.quizit.user.global.annotation.Router
+import com.quizit.user.global.util.logFilter
 import com.quizit.user.global.util.queryParams
 import com.quizit.user.handler.UserHandler
 import org.springframework.context.annotation.Bean
@@ -24,5 +25,6 @@ class UserRouter {
                 PUT("/{id}", handler::updateUserById)
                 DELETE("/{id}", handler::deleteUserById)
             }
+            filter(::logFilter)
         }
 }
